@@ -331,19 +331,39 @@ extension MergeVideosViewController {
                                         fromPoint: allAreLayer.position,
                                         toPoint: CGPoint(x: -allAreLayer.frame.width, y: allAreLayer.position.y))
                                     
+                                    promptLayer = CALayer()
+                                    promptLayer.frame = CGRect(origin: CGPoint(x: parentLayer.frame.width, y: 0), size: parentLayer.frame.size)
+                                    promptLayer.backgroundColor = UIColor(red: 90/255, green: 214/255, blue: 219/255, alpha: 1).CGColor
+                                    promptLayer.opacity = 0.0
+                                    
+                                    parentLayer.addSublayer(promptLayer)
+                                    
                                     let promptImage = UIImage(named: "prompts6.png")!.resizeImage(newHeight: videoItemSize.height)
                                     promptImageLayer = CALayer()
                                     promptImageLayer.contents = promptImage.CGImage
                                     promptImageLayer.frame = CGRect(origin: .zero, size: promptImage.size)
                                     promptImageLayer.masksToBounds = true
-                                    
-                                    promptLayer = CALayer()
-                                    promptLayer.frame = CGRect(origin: CGPoint(x: parentLayer.frame.width, y: 0), size: parentLayer.frame.size)
-                                    promptLayer.backgroundColor = UIColor(red: 90/255, green: 214/255, blue: 219/255, alpha: 1).CGColor
-                                    promptLayer.opacity = 0.0
                                     promptLayer.addSublayer(promptImageLayer)
                                     
-                                    parentLayer.addSublayer(promptLayer)
+                                    let companyLogoImage = UIImage(named: "company-logo.png")!
+                                    let companyLogoLayer = CALayer()
+                                    companyLogoLayer.contentsGravity = kCAGravityResizeAspect
+                                    companyLogoLayer.contents = companyLogoImage.CGImage
+                                    companyLogoLayer.frame = CGRect(origin: CGPoint(x: promptImageLayer.frame.maxX + 40, y: 40.0),
+                                        size: CGSize(width: 80, height: 80))
+                                    companyLogoLayer.masksToBounds = true
+                                    promptLayer.addSublayer(companyLogoLayer)
+                                    
+                                    let companyNameTextLayer = CATextLayer()
+                                    companyNameTextLayer.string = "COMPANY NAME"
+                                    companyNameTextLayer.fontSize = 40
+                                    
+                                    companyNameTextLayer.frame = CGRect(origin: .zero, size: CGSize(width: promptLayer.bounds.width, height: companyNameTextLayer.fontSize + 10))
+                                    companyNameTextLayer.anchorPoint = CGPoint(x: 0, y: 0.5)
+                                    companyNameTextLayer.position = CGPoint(x: companyLogoLayer.frame.maxX + 10, y: companyLogoLayer.position.y)
+                                    companyNameTextLayer.font = self.font1
+                                    companyNameTextLayer.foregroundColor = UIColor.blackColor().CGColor
+                                    promptLayer.addSublayer(companyNameTextLayer)
                                     
                                     self.hideLayer(promptLayer,
                                         hidden: false,
@@ -376,9 +396,9 @@ extension MergeVideosViewController {
                                         y: 0,
                                         width: promptLayer.bounds.width - promptImageLayer.bounds.width - 50,
                                         height: 200)
-                                    promptTextLayer.anchorPoint = CGPoint(x: 0, y: 0.5)
+                                    promptTextLayer.anchorPoint = CGPoint(x: 0, y: 1)
                                     promptTextLayer.position = CGPoint(x: -promptLayer.bounds.width,
-                                        y: promptLayer.bounds.height/2)
+                                        y: promptLayer.bounds.height - 80)
                                     promptTextLayer.alignmentMode = kCAAlignmentLeft
                                     promptTextLayer.foregroundColor = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1).CGColor
                                     promptTextLayer.opacity = 0.0
@@ -393,7 +413,7 @@ extension MergeVideosViewController {
                                         duration: 0.25,
                                         beginTime: atTime.seconds,
                                         fromPoint: promptTextLayer.position,
-                                        toPoint: CGPoint(x: promptImageLayer.frame.maxX + 10,
+                                        toPoint: CGPoint(x: promptImageLayer.frame.maxX + 40,
                                             y: promptTextLayer.position.y),
                                         damping: true)
                                     
