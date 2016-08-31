@@ -275,15 +275,15 @@ extension MergeVideosViewController {
                                     self.moveLayer(allAreTextLayer,
                                         duration: 0.25,
                                         beginTime: atTime.seconds,
-                                        fromCenterPoint: allAreTextLayer.position,
-                                        toCenterPoint: CGPoint(x: allAreTextLayer.frame.width/4 - 50, y: allAreTextLayer.position.y))
+                                        fromPoint: allAreTextLayer.position,
+                                        toPoint: CGPoint(x: allAreTextLayer.frame.width/4 - 50, y: allAreTextLayer.position.y))
                                     
                                     self.hideLayer(reactionsTextLayer, hidden: false, duration: 0, beginTime: atTime.seconds)
                                     self.moveLayer(reactionsTextLayer,
                                         duration: 0.25,
                                         beginTime: atTime.seconds,
-                                        fromCenterPoint: reactionsTextLayer.position,
-                                        toCenterPoint: CGPoint(x: allAreLayer.frame.width/2, y: allAreLayer.frame.height/2))
+                                        fromPoint: reactionsTextLayer.position,
+                                        toPoint: CGPoint(x: allAreLayer.frame.width/2, y: allAreLayer.frame.height/2))
                                     
             }, atTimeDidChange: nil)
         
@@ -310,14 +310,16 @@ extension MergeVideosViewController {
                                     self.moveLayer(withTextLayer,
                                         duration: 0.25,
                                         beginTime: atTime.seconds,
-                                        fromCenterPoint: withTextLayer.position,
-                                        toCenterPoint: CGPoint(x: allAreLayer.frame.width*3/4 + 20, y: withTextLayer.position.y))
+                                        fromPoint: withTextLayer.position,
+                                        toPoint: CGPoint(x: allAreLayer.frame.width*3/4 + 20, y: withTextLayer.position.y))
             }, atTimeDidChange: nil)
         ////////////////////////////////////////////////
         
         
         
         ////////////////////////////////////////////////
+        var promptLayer: CALayer!
+        var promptImageLayer: CALayer!
         addBlankLayerInstruction(composition: mixComposition,
                                  atTime: &atTime,
                                  layerInstructions: &layerInstructions,
@@ -326,30 +328,32 @@ extension MergeVideosViewController {
                                     self.moveLayer(allAreLayer,
                                         duration: 0.25,
                                         beginTime: atTime.seconds,
-                                        fromCenterPoint: allAreLayer.position,
-                                        toCenterPoint: CGPoint(x: -allAreLayer.frame.width, y: allAreLayer.position.y))
+                                        fromPoint: allAreLayer.position,
+                                        toPoint: CGPoint(x: -allAreLayer.frame.width, y: allAreLayer.position.y))
                                     
                                     let promptImage = UIImage(named: "prompts6.png")!.resizeImage(newHeight: videoItemSize.height)
-                                    let promptImageLayer = CALayer()
+                                    promptImageLayer = CALayer()
                                     promptImageLayer.contents = promptImage.CGImage
                                     promptImageLayer.frame = CGRect(origin: .zero, size: promptImage.size)
                                     promptImageLayer.masksToBounds = true
                                     
-                                    let promptLayer = CALayer()
-                                    promptLayer.frame = CGRect(origin: CGPoint(x: parentLayer.frame.width, y: 0), size: promptLayer.frame.size)
+                                    promptLayer = CALayer()
+                                    promptLayer.frame = CGRect(origin: CGPoint(x: parentLayer.frame.width, y: 0), size: parentLayer.frame.size)
+                                    promptLayer.backgroundColor = UIColor(red: 90/255, green: 214/255, blue: 219/255, alpha: 1).CGColor
+                                    promptLayer.opacity = 0.0
                                     promptLayer.addSublayer(promptImageLayer)
                                     
                                     parentLayer.addSublayer(promptLayer)
                                     
-                                    self.hideLayer(promptImageLayer,
+                                    self.hideLayer(promptLayer,
                                         hidden: false,
                                         duration: 0,
                                         beginTime: atTime.seconds)
                                     self.moveLayer(promptLayer,
                                         duration: 0.25,
                                         beginTime: atTime.seconds,
-                                        fromCenterPoint: promptLayer.position,
-                                        toCenterPoint: CGPoint(x: parentLayer.frame.width/2, y: parentLayer.frame.height/2))
+                                        fromPoint: promptLayer.position,
+                                        toPoint: CGPoint(x: parentLayer.frame.width/2, y: parentLayer.frame.height/2))
             },
                                  atTimeDidChange: {
                                     self.hideLayer(allAreLayer,
@@ -357,6 +361,44 @@ extension MergeVideosViewController {
                                         duration: 0,
                                         beginTime: atTime.seconds)
         })
+        
+        addBlankLayerInstruction(composition: mixComposition,
+                                 atTime: &atTime,
+                                 layerInstructions: &layerInstructions,
+                                 size: videoItemSize,
+                                 atTimeWillChange: {
+                                    let promptTextLayer = CATextLayer()
+                                    promptTextLayer.string = "Tell me one secrect which the others in your team don't know?"
+                                    promptTextLayer.font = self.font1
+                                    promptTextLayer.wrapped = true
+                                    promptTextLayer.fontSize = 40
+                                    promptTextLayer.frame = CGRect(x: 0,
+                                        y: 0,
+                                        width: promptLayer.bounds.width - promptImageLayer.bounds.width - 50,
+                                        height: 200)
+                                    promptTextLayer.anchorPoint = CGPoint(x: 0, y: 0.5)
+                                    promptTextLayer.position = CGPoint(x: -promptLayer.bounds.width,
+                                        y: promptLayer.bounds.height/2)
+                                    promptTextLayer.alignmentMode = kCAAlignmentLeft
+                                    promptTextLayer.foregroundColor = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1).CGColor
+                                    promptTextLayer.opacity = 0.0
+                                    promptLayer.addSublayer(promptTextLayer)
+                                    
+                                    self.hideLayer(promptTextLayer,
+                                        hidden: false,
+                                        duration: 0,
+                                        beginTime: atTime.seconds)
+                                    
+                                    self.moveLayer(promptTextLayer,
+                                        duration: 0.25,
+                                        beginTime: atTime.seconds,
+                                        fromPoint: promptTextLayer.position,
+                                        toPoint: CGPoint(x: promptImageLayer.frame.maxX + 10,
+                                            y: promptTextLayer.position.y),
+                                        damping: true)
+                                    
+            }, atTimeDidChange: nil)
+        
         ////////////////////////////////////////////////
         
         
@@ -408,6 +450,10 @@ extension MergeVideosViewController {
         }
     }
     
+    private func addEmptyDuration() {
+        
+    }
+    
     private func addLayerInstruction(layerInstruction: AVMutableVideoCompositionLayerInstruction,
                                      inout layerInstructions: [AVVideoCompositionLayerInstruction],
                                            inout atTime: CMTime,
@@ -438,17 +484,31 @@ extension MergeVideosViewController {
     private func moveLayer(layer: CALayer,
                            duration: CFTimeInterval,
                            beginTime: CFTimeInterval,
-                           fromCenterPoint: CGPoint,
-                           toCenterPoint: CGPoint) {
+                           fromPoint: CGPoint,
+                           toPoint: CGPoint,
+                           damping: Bool = false) {
         let beginTime = beginTime == 0.0 ? AVCoreAnimationBeginTimeAtZero : beginTime
-        let hideAnimation = CABasicAnimation(keyPath: "position")
-        hideAnimation.duration = duration
-        hideAnimation.removedOnCompletion = false
-        hideAnimation.fromValue = NSValue(CGPoint: fromCenterPoint)
-        hideAnimation.toValue = NSValue(CGPoint: toCenterPoint)
-        hideAnimation.beginTime = beginTime
-        hideAnimation.fillMode = kCAFillModeForwards
-        layer.addAnimation(hideAnimation, forKey: "animatePosition\(NSDate().timeIntervalSince1970)")
+        
+        if damping {
+            let hideAnimation = CASpringAnimation(keyPath: "position.x")
+            hideAnimation.damping = 10.0
+            hideAnimation.initialVelocity = 0.7
+            hideAnimation.beginTime = beginTime
+            hideAnimation.removedOnCompletion = false
+            hideAnimation.fromValue = NSValue(CGPoint: fromPoint)
+            hideAnimation.toValue = NSValue(CGPoint: toPoint)
+            hideAnimation.duration = hideAnimation.settlingDuration
+            layer.addAnimation(hideAnimation, forKey: "animatePosition\(NSDate().timeIntervalSince1970)")
+        } else {
+            let hideAnimation = CABasicAnimation(keyPath: "position")
+            hideAnimation.duration = duration
+            hideAnimation.removedOnCompletion = false
+            hideAnimation.fromValue = NSValue(CGPoint: fromPoint)
+            hideAnimation.toValue = NSValue(CGPoint: toPoint)
+            hideAnimation.beginTime = beginTime
+            hideAnimation.fillMode = kCAFillModeForwards
+            layer.addAnimation(hideAnimation, forKey: "animatePosition\(NSDate().timeIntervalSince1970)")
+        }
     }
     
     private func blankCenterTextLayer(backgroundColor backgroundColor: UIColor,
