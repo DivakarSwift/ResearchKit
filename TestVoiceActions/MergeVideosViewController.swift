@@ -310,6 +310,19 @@ extension MergeVideosViewController {
         }
     }
     
+    private func zoomOutLayer(layer: CALayer,
+                             duaration: CFTimeInterval,
+                             beginTime: CFTimeInterval) {
+        let scaleAnimation: CABasicAnimation = CABasicAnimation(keyPath: "transform.scale")
+        scaleAnimation.duration = duaration
+        scaleAnimation.removedOnCompletion = false
+        scaleAnimation.fromValue = 0.0
+        scaleAnimation.toValue = 1.0
+        scaleAnimation.beginTime = beginTime
+        scaleAnimation.fillMode = kCAFillModeForwards
+        layer.addAnimation(scaleAnimation, forKey: "scaleAnimate\(NSDate().timeIntervalSince1970)")
+    }
+    
     private func imageLayer(imageName: String) -> CALayer {
         let image = UIImage(named: imageName)!
         return imageLayer(image)
@@ -381,6 +394,24 @@ extension MergeVideosViewController {
         }
         return (result.layer, result.textLayer)
     }
+    
+    
+    private func layerWithBGColor(bgColor: UIColor,
+                                  frame: CGRect,
+                                  showTime: CFTimeInterval) -> CALayer {
+        let layer = CALayer()
+        layer.backgroundColor = bgColor.CGColor
+        layer.frame = frame
+        if showTime != 0.0 {
+            layer.opacity = 0.0
+            hideLayer(layer,
+                      hidden: false,
+                      duration: 0,
+                      beginTime: showTime)
+        }
+        return layer
+    }
+    
     
 }
 
@@ -486,13 +517,9 @@ extension MergeVideosViewController {
                   toPoint: lastEndPoint)
         
         
-        let whoNextLayer = CALayer()
-        whoNextLayer.backgroundColor = UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1).CGColor
-        whoNextLayer.frame = CGRect(x: 0,
-                                    y: 0,
-                                    width: (parentLayer.bounds.width - lastEndPoint.x - tienThumbnailLayer.bounds.width/2),
-                                    height: parentLayer.bounds.height)
-        whoNextLayer.opacity = 0.0
+        let whoNextLayer = layerWithBGColor(UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1),
+                                            frame: CGRect(x: 0, y: 0, width: (parentLayer.bounds.width - lastEndPoint.x - tienThumbnailLayer.bounds.width/2), height: parentLayer.bounds.height),
+                                            showTime: atTime.seconds)
         whoNextLayer.anchorPoint = .zero
         whoNextLayer.position = CGPoint(x: parentLayer.bounds.width,
                                         y: 0)
@@ -511,21 +538,54 @@ extension MergeVideosViewController {
         whoNextLayer.addSublayer(whoNextTextLayer)
         
         
-        
-        hideLayer(whoNextLayer,
-                  hidden: false,
-                  duration: 0,
-                  beginTime: atTime.seconds)
         moveLayer(whoNextLayer,
                   duration: animationDuration,
                   beginTime: atTime.seconds + animationDuration * 5,
                   fromPoint: whoNextLayer.position,
                   toPoint: CGPoint(x: parentLayer.bounds.width - whoNextLayer.bounds.width,
-                    y: 0))
-        
-        
+                    y: 0),
+                  damping: true)
         
         atTime = CMTimeAdd(atTime, CMTimeMake(4, kCMTimeZero.timescale))
+        
+        let letJoinLayer = layerWithBGColor(UIColor.whiteColor(),
+                                            frame: CGRect(origin: CGPoint(x: 0, y: -parentLayer.bounds.height),
+                                                size: parentLayer.bounds.size),
+                                            showTime: atTime.seconds)
+        parentLayer.addSublayer(letJoinLayer)
+        moveLayer(letJoinLayer,
+                  duration: 0.35,
+                  beginTime: atTime.seconds,
+                  fromPoint: letJoinLayer.position,
+                  toPoint: CGPoint(x: parentLayer.bounds.width/2, y: parentLayer.bounds.height/2))
+        
+        
+        let letJoinTextLayer = CATextLayer()
+        letJoinTextLayer.string = "Let join with us at:"
+        letJoinTextLayer.font = font1
+        letJoinTextLayer.fontSize = 50
+        letJoinTextLayer.frame = CGRect(x: 0,
+                                        y: letJoinLayer.bounds.height/2 + letJoinTextLayer.fontSize,
+                                        width: letJoinLayer.bounds.width,
+                                        height: letJoinTextLayer.fontSize + 10)
+        letJoinTextLayer.foregroundColor = UIColor(red: 107/255, green: 97/255, blue: 255/255, alpha: 1).CGColor
+        letJoinTextLayer.alignmentMode = kCAAlignmentCenter
+        letJoinLayer.addSublayer(letJoinTextLayer)
+        
+        let letJoinAddressLayer = CATextLayer()
+        letJoinAddressLayer.string = "http://hilao.co"
+        letJoinAddressLayer.font = font1
+        letJoinAddressLayer.fontSize = 100
+        letJoinAddressLayer.frame = CGRect(x: 0,
+                                        y: letJoinLayer.bounds.height/2 - letJoinTextLayer.fontSize - 50,
+                                        width: letJoinLayer.bounds.width,
+                                        height: letJoinTextLayer.fontSize + 70)
+        letJoinAddressLayer.foregroundColor = UIColor(red: 84/255, green: 212/255, blue: 221/255, alpha: 1).CGColor
+        letJoinAddressLayer.alignmentMode = kCAAlignmentCenter
+        letJoinLayer.addSublayer(letJoinAddressLayer)
+        
+        atTime = CMTimeAdd(atTime, CMTimeMake(1, kCMTimeZero.timescale))
+        
         
         
         
@@ -592,6 +652,7 @@ extension MergeVideosViewController {
                   hidden: true,
                   duration: 0,
                   beginTime: atTime.seconds + videoAsset.duration.seconds + 2)
+        
         
         //// Instruction
         let assetTimeRange = CMTimeRangeMake(kCMTimeZero, videoAsset.duration)
