@@ -333,7 +333,6 @@ extension MergeVideosViewController {
                                                 textFont: UIFont,
                                                 textFontSize: CGFloat,
                                                 hideWhenEnd: Bool = true,
-                                                isFirstScene: Bool = false,
                                                 duration: Int64) -> (backgroundLayer: CALayer, textLayer: CATextLayer) {
         
         let result = blankCenterTextLayer(backgroundColor: backgroundColor,
@@ -343,11 +342,11 @@ extension MergeVideosViewController {
                                           textFont: textFont,
                                           textFontSize: textFontSize)
         parentLayer.addSublayer(result.layer)
-        if !isFirstScene {
+        if atTime.seconds != 0.0 {
             result.layer.opacity = 0.0
+            self.hideLayer(result.layer, hidden: false, duration: 0, beginTime: atTime.seconds)
         }
-        self.hideLayer(result.layer, hidden: false, duration: 0, beginTime: atTime.seconds)
-        
+
         atTime = CMTimeAdd(atTime, CMTimeMake(duration, kCMTimeZero.timescale))
         
         if hideWhenEnd {
@@ -362,16 +361,37 @@ extension MergeVideosViewController {
 // MARK: - Hard code
 
 extension MergeVideosViewController {
+    private func addSumaryScenceAtTime(startTime: CMTime,
+                                       parentLayer: CALayer,
+                                       composition: AVMutableComposition,
+                                       videoAsset: AVAsset,
+                                       title: String,
+                                       videoItemSize: CGSize) -> (AVMutableVideoCompositionInstruction, endTime: CMTime) {
+        let atTime = startTime
+        /// Instruction
+        let layerInstruction = setVideoDuration(atTime,
+                                                composition: composition,
+                                                videoSize: ExportedVideoSize)
+        layerInstruction.setOpacity(0.0, atTime: atTime)
+        
+        let introInstruction = AVMutableVideoCompositionInstruction()
+        introInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, atTime)
+        introInstruction.backgroundColor = UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1).CGColor
+        introInstruction.layerInstructions = [layerInstruction]
+        
+        return (introInstruction, atTime)
+    }
+    
     private func addVideoItemScenceAtTime(startTime: CMTime,
                                      parentLayer: CALayer,
                                      composition: AVMutableComposition,
                                      videoAsset: AVAsset,
                                      title: String,
                                      videoItemSize: CGSize) -> (AVMutableVideoCompositionInstruction, endTime: CMTime) {
-        let randomSide = Int(arc4random()) % 2 == 0
+        let randomSide = arc4random_uniform(2) == 0
         let startPoint = randomSide ? CGPoint(x: -parentLayer.bounds.width/2, y: parentLayer.bounds.height/2) : CGPoint(x: parentLayer.bounds.width*3/2, y: parentLayer.bounds.height/2)
-        let endPoint = randomSide ? CGPoint(x: (parentLayer.bounds.width/2 - videoItemSize.width/2)/2 - 20,
-                                            y: startPoint.y) : CGPoint(x: (parentLayer.bounds.width/2 + videoItemSize.width/2)/2 + 20, y: startPoint.y)
+        let endPoint = randomSide ? CGPoint(x: (parentLayer.bounds.width/2 - videoItemSize.width) - 40,
+                                            y: startPoint.y) : CGPoint(x: (parentLayer.bounds.width/2 + videoItemSize.width) + 40, y: startPoint.y)
         
         let atTime = startTime
         let backgroundColor = UIColor(red: 102/255, green: 89/255, blue: 255/255, alpha: 1).CGColor
@@ -381,7 +401,7 @@ extension MergeVideosViewController {
         tienTitleTextLayer.font = font1
         tienTitleTextLayer.fontSize = 40
         tienTitleTextLayer.foregroundColor = UIColor(red: 232/255, green: 212/255, blue: 65/255, alpha: 1).CGColor
-        tienTitleTextLayer.alignmentMode = kCAAlignmentRight
+        tienTitleTextLayer.alignmentMode = randomSide ? kCAAlignmentRight : kCAAlignmentLeft
         tienTitleTextLayer.frame = CGRect(origin: .zero,
                                           size: CGSize(width: parentLayer.bounds.width/2 - videoItemSize.width/2, height: 50))
         tienTitleTextLayer.position = startPoint
@@ -412,18 +432,22 @@ extension MergeVideosViewController {
                   beginTime: atTime.seconds + videoAsset.duration.seconds + 2)
         
         //// Instruction
+        let assetTimeRange = CMTimeRangeMake(kCMTimeZero, videoAsset.duration)
         let videoTrack = composition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
-        try! videoTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, videoAsset.duration), ofTrack: videoAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: atTime)
-        let tienLayerInstruction = videoCompositionInstructionForTrack(videoTrack,
+        try! videoTrack.insertTimeRange(assetTimeRange, ofTrack: videoAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: atTime)
+        let layerInstruction = videoCompositionInstructionForTrack(videoTrack,
                                                                        asset: videoAsset,
                                                                        fixRotate: true,
                                                                        frame: CGRect(origin: CGPoint(x: ExportedVideoSize.width/2 - videoItemSize.width/2, y: 0),
                                                                         size: videoItemSize))
         
+        let audioTrack = composition.addMutableTrackWithMediaType(AVMediaTypeAudio, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
+        try! audioTrack.insertTimeRange(assetTimeRange, ofTrack: videoAsset.tracksWithMediaType(AVMediaTypeAudio)[0], atTime: atTime)
+        
         let tienInstruction = AVMutableVideoCompositionInstruction()
         tienInstruction.timeRange = CMTimeRangeMake(atTime, videoAsset.duration)
         tienInstruction.backgroundColor = backgroundColor
-        tienInstruction.layerInstructions = [tienLayerInstruction]
+        tienInstruction.layerInstructions = [layerInstruction]
         
         
         let endTime = CMTimeAdd(startTime, videoAsset.duration)
@@ -446,7 +470,6 @@ extension MergeVideosViewController {
                                  text: "smile.",
                                  textFont: font1,
                                  textFontSize: textFontSize1,
-                                 isFirstScene: true,
                                  duration: 1)
         ////////////////////////////////////////////////
         
@@ -539,7 +562,9 @@ extension MergeVideosViewController {
                   beginTime: atTime.seconds)
         ////////////////////////////////////////////////
         
-        //        let VideoDuration = Int64(18)
+        
+        
+        /// Instruction
         let layerInstruction = setVideoDuration(atTime,
                                                 composition: composition,
                                                 videoSize: ExportedVideoSize)
@@ -547,6 +572,7 @@ extension MergeVideosViewController {
         
         let introInstruction = AVMutableVideoCompositionInstruction()
         introInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, atTime)
+        introInstruction.backgroundColor = UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1).CGColor
         introInstruction.layerInstructions = [layerInstruction]
         
         return (introInstruction, atTime)
