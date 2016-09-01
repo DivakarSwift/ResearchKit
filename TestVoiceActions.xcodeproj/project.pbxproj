@@ -293,9 +293,9 @@
 			children = (
 				616EE4941D73E1C300F2FE42 /* MergeVideosViewController.swift */,
 				616EE4A81D744AB000F2FE42 /* SmoothTextLayer.swift */,
-				613DE9621D76AADD0006D6A2 /* String.swift */,
-				61997A091D7599F90062CEC4 /* UIImage.swift */,
 				61A3D2E41D77E857000D20F4 /* AVAsset.swift */,
+				61997A091D7599F90062CEC4 /* UIImage.swift */,
+				613DE9621D76AADD0006D6A2 /* String.swift */,
 				61CC87BA1D78291C0062743C /* applause.mp3 */,
 				61A3D2EC1D781E4F000D20F4 /* yellow.png */,
 				61CC87B81D7825E50062743C /* cup.png */,

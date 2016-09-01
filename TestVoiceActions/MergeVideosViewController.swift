@@ -91,6 +91,7 @@ extension MergeVideosViewController {
         ////////////////////////////////////////////////
         let mixComposition = AVMutableComposition()
         var atTime: CMTime = kCMTimeZero
+        let audioMix = AVMutableAudioMix()
         
         ////////////////////////////////////////////////
         //////////////// Add Sence ////////////////////
@@ -111,6 +112,7 @@ extension MergeVideosViewController {
         videoLayer.frame = CGRect(origin: .zero, size: ExportedVideoSize)
         parentLayer.addSublayer(videoLayer)
         
+        var mixAudioInputParams: [AVAudioMixInputParameters] = []
         var instructions: [AVMutableVideoCompositionInstruction] = []
         let (introInstruction, introEndTime) = addIntroScenceAtTime(atTime,
                                                                     parentLayer: parentLayer,
@@ -120,7 +122,6 @@ extension MergeVideosViewController {
         atTime = introEndTime
         instructions.append(introInstruction)
         ////////////////////////////////////////////////
-        
         
         ////////////////////////////////////////////////
         for (index, asset) in assets.enumerate() {
@@ -139,7 +140,7 @@ extension MergeVideosViewController {
             default:
                 title = ""
             }
-            let (instruction, endTime) = addVideoItemScenceAtTime(atTime,
+            let (instruction, endTime, mixAudioParam) = addVideoItemScenceAtTime(atTime,
                                                                   parentLayer: parentLayer,
                                                                   composition: mixComposition,
                                                                   videoAsset: asset,
@@ -148,6 +149,7 @@ extension MergeVideosViewController {
                                                                   videoItemIndex: index)
             atTime = endTime
             instructions.append(instruction)
+            mixAudioInputParams.append(mixAudioParam)
         }
         ////////////////////////////////////////////////
         
@@ -176,12 +178,19 @@ extension MergeVideosViewController {
         ////////////////////////////////////////////////
         ////////////////////////////////////////////////
         
+        audioMix.inputParameters = mixAudioInputParams
+        
+        
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        
         /// Create output url
         let outputURL = getSavePathURL()
         
         /// Create export
         let exported = AVAssetExportSession(asset: mixComposition, presetName: AVAssetExportPresetHighestQuality)!
         exported.videoComposition = mainComposition
+        exported.audioMix = audioMix
         exported.outputURL = outputURL
         exported.outputFileType = AVFileTypeQuickTimeMovie
         exported.shouldOptimizeForNetworkUse = true
@@ -252,7 +261,7 @@ extension MergeVideosViewController {
         hideAnimation.toValue = toValue
         hideAnimation.beginTime = beginTime
         hideAnimation.fillMode = kCAFillModeForwards
-        layer.addAnimation(hideAnimation, forKey: "animateOpacity\(NSDate().timeIntervalSince1970)")
+        layer.addAnimation(hideAnimation, forKey: "animateOpacity\(String.randomKey())")
     }
     
     
@@ -274,7 +283,7 @@ extension MergeVideosViewController {
             hideAnimation.toValue = NSValue(CGPoint: toPoint)
             hideAnimation.duration = hideAnimation.settlingDuration
             hideAnimation.fillMode = kCAFillModeForwards
-            layer.addAnimation(hideAnimation, forKey: "animatePosition\(NSDate().timeIntervalSince1970)")
+            layer.addAnimation(hideAnimation, forKey: "animatePosition\(String.randomKey())")
         } else {
             let hideAnimation = CABasicAnimation(keyPath: "position")
             hideAnimation.duration = duration
@@ -283,7 +292,7 @@ extension MergeVideosViewController {
             hideAnimation.toValue = NSValue(CGPoint: toPoint)
             hideAnimation.beginTime = beginTime
             hideAnimation.fillMode = kCAFillModeForwards
-            layer.addAnimation(hideAnimation, forKey: "animatePosition\(NSDate().timeIntervalSince1970)")
+            layer.addAnimation(hideAnimation, forKey: "animatePosition\(String.randomKey())")
         }
     }
     
@@ -306,7 +315,7 @@ extension MergeVideosViewController {
         scaleAnimation.toValue = 1.0
         scaleAnimation.beginTime = beginTime
         scaleAnimation.fillMode = kCAFillModeForwards
-        layer.addAnimation(scaleAnimation, forKey: "scaleAnimate\(NSDate().timeIntervalSince1970)")
+        layer.addAnimation(scaleAnimation, forKey: "scaleAnimate\(String.randomKey())")
     }
     
     private func imageLayer(imageName: String) -> CALayer {
@@ -467,6 +476,7 @@ extension MergeVideosViewController {
         
         
         
+        
         let tamThumbnailLayer = imageLayer(assets[2].previewImageAtTime()!.resizeImage(newHeight: videoItemSize.height))
         tamThumbnailLayer.anchorPoint = .zero
         tamThumbnailLayer.position = CGPoint(x: parentLayer.bounds.width, y: 0)
@@ -620,9 +630,10 @@ extension MergeVideosViewController {
                                           videoAsset: AVAsset,
                                           title: String,
                                           videoItemSize: CGSize,
-                                          videoItemIndex: Int) -> (AVMutableVideoCompositionInstruction, endTime: CMTime) {
+                                          videoItemIndex: Int) -> (AVMutableVideoCompositionInstruction, endTime: CMTime, AVAudioMixInputParameters) {
         var videoAssetDuration = videoAsset.duration
         let randomSide = arc4random_uniform(2) == 0
+        
         let startPoint = randomSide ? CGPoint(x: -parentLayer.bounds.width/2, y: parentLayer.bounds.height/2) : CGPoint(x: parentLayer.bounds.width*3/2, y: parentLayer.bounds.height/2)
         let endPoint = randomSide ? CGPoint(x: (parentLayer.bounds.width/2 - videoItemSize.width) - 40,
                                             y: startPoint.y) : CGPoint(x: (parentLayer.bounds.width/2 + videoItemSize.width) + 40, y: startPoint.y)
@@ -630,38 +641,37 @@ extension MergeVideosViewController {
         let atTime = startTime
         let backgroundColor = UIColor(red: 102/255, green: 89/255, blue: 255/255, alpha: 1).CGColor
         
-        let tienTitleTextLayer = CATextLayer()
-        tienTitleTextLayer.string = title
-        tienTitleTextLayer.font = font1
-        tienTitleTextLayer.fontSize = 40
-        tienTitleTextLayer.foregroundColor = UIColor(red: 232/255, green: 212/255, blue: 65/255, alpha: 1).CGColor
-        tienTitleTextLayer.alignmentMode = randomSide ? kCAAlignmentRight : kCAAlignmentLeft
-        tienTitleTextLayer.frame = CGRect(origin: .zero,
+        let titleTextLayer = CATextLayer()
+        titleTextLayer.string = title
+        titleTextLayer.font = font1
+        titleTextLayer.fontSize = 40
+        titleTextLayer.foregroundColor = UIColor(red: 232/255, green: 212/255, blue: 65/255, alpha: 1).CGColor
+        titleTextLayer.alignmentMode = randomSide ? kCAAlignmentRight : kCAAlignmentLeft
+        titleTextLayer.frame = CGRect(origin: .zero,
                                           size: CGSize(width: parentLayer.bounds.width/2 - videoItemSize.width/2, height: 50))
-        tienTitleTextLayer.position = startPoint
-        tienTitleTextLayer.opacity = 0.0
-        parentLayer.addSublayer(tienTitleTextLayer)
+        titleTextLayer.position = startPoint
+        titleTextLayer.opacity = 0.0
+        parentLayer.addSublayer(titleTextLayer)
         
-        hideLayer(tienTitleTextLayer,
+        hideLayer(titleTextLayer,
                   hidden: false,
                   duration: 0,
                   beginTime: atTime.seconds + 0.5)
         
-        
-        moveLayer(tienTitleTextLayer,
+        moveLayer(titleTextLayer,
                   duration: 0.35,
                   beginTime: atTime.seconds + 1.0,
-                  fromPoint: tienTitleTextLayer.position,
+                  fromPoint: startPoint,
                   toPoint: endPoint,
                   damping: true)
         
-        moveLayer(tienTitleTextLayer,
+        moveLayer(titleTextLayer,
                   duration: 0.35,
-                  beginTime: atTime.seconds + videoAssetDuration.seconds - 1.0,
-                  fromPoint: tienTitleTextLayer.position,
+                  beginTime: atTime.seconds + videoAssetDuration.seconds - 0.5,
+                  fromPoint: endPoint,
                   toPoint: startPoint)
         
-        hideLayer(tienTitleTextLayer,
+        hideLayer(titleTextLayer,
                   hidden: true,
                   duration: 0,
                   beginTime: atTime.seconds + videoAssetDuration.seconds + 2)
@@ -780,6 +790,8 @@ extension MergeVideosViewController {
         
         let audioTrack = composition.addMutableTrackWithMediaType(AVMediaTypeAudio, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
         try! audioTrack.insertTimeRange(assetTimeRange, ofTrack: videoAsset.tracksWithMediaType(AVMediaTypeAudio)[0], atTime: atTime)
+        let audioInputParams = AVMutableAudioMixInputParameters(track: audioTrack)
+        audioInputParams.setVolume(1, atTime: atTime)
         
         let tienInstruction = AVMutableVideoCompositionInstruction()
         tienInstruction.timeRange = CMTimeRangeMake(atTime, videoAssetDuration)
@@ -789,7 +801,7 @@ extension MergeVideosViewController {
         
         let endTime = CMTimeAdd(startTime, videoAssetDuration)
         
-        return (tienInstruction, endTime)
+        return (tienInstruction, endTime, audioInputParams)
         
     }
     
@@ -1155,7 +1167,7 @@ extension MergeVideosViewController {
             if let url = url {
                 let player = AVPlayer(URL: url)
                 self.playerController.player = player
-                self.playerController
+                self.playerController.player?.volume = 1.0
                 self.presentViewController(self.playerController, animated: true, completion: { _ in
                     self.playerController.player?.play()
                 })
@@ -1492,7 +1504,7 @@ extension MergeVideosViewController {
         animation1.fromValue = 1.0
         animation1.toValue = 0.0
         animation1.beginTime = 7.5
-        animation1.fillMode = kCAFillModeBoth
+        animation1.fillMode = kCAFillModeForwards
         textLayer1.addAnimation(animation1, forKey: "animateOpacity")
         
         
