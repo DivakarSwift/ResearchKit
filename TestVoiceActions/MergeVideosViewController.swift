@@ -143,19 +143,43 @@ extension MergeVideosViewController {
         videoLayer.frame = CGRect(origin: .zero, size: ExportedVideoSize)
         parentLayer.addSublayer(videoLayer)
         
+        var instructions: [AVMutableVideoCompositionInstruction] = []
         let (introInstruction, introEndTime) = addIntroScenceAtTime(atTime,
                                                                     parentLayer: parentLayer,
                                                                     composition: mixComposition,
                                                                     videoItemSize: videoItemSize)
         
         atTime = introEndTime
+        instructions.append(introInstruction)
+        ////////////////////////////////////////////////
+        
         
         ////////////////////////////////////////////////
-        let (tienInstruction, tienEndTime) = addTienScenceAtTime(atTime,
-                                                                 parentLayer: parentLayer,
-                                                                 composition: mixComposition,
-                                                                 videoItemSize: videoItemSize)
-        atTime = tienEndTime
+        for (index, asset) in assets.enumerate() {
+            var title: String = ""
+            switch index {
+            case 0:
+                title = "Tien"
+            case 1:
+                title = "Sunny"
+            case 2:
+                title = "Tam"
+            case 3:
+                title = "Tai"
+            case 4:
+                title = "Cuong"
+            default:
+                title = ""
+            }
+            let (instruction, endTime) = addVideoItemScenceAtTime(atTime,
+                                                                  parentLayer: parentLayer,
+                                                                  composition: mixComposition,
+                                                                  videoAsset: asset,
+                                                                  title: title,
+                                                                  videoItemSize: videoItemSize)
+            atTime = endTime
+            instructions.append(instruction)
+        }
         ////////////////////////////////////////////////
         
         
@@ -163,10 +187,9 @@ extension MergeVideosViewController {
         ////////////////////////////////////////////////
         let renderSize = ExportedVideoSize
         let mainComposition = AVMutableVideoComposition(propertiesOfAsset: mixComposition)
-        mainComposition.instructions = [introInstruction, tienInstruction]
+        mainComposition.instructions = instructions
         mainComposition.frameDuration = CMTimeMake(1, 30)
         mainComposition.renderSize = renderSize
-        
         mainComposition.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videoLayer, inLayer: parentLayer)
         ////////////////////////////////////////////////
         ////////////////////////////////////////////////
@@ -339,23 +362,29 @@ extension MergeVideosViewController {
 // MARK: - Hard code
 
 extension MergeVideosViewController {
-    private func addTienScenceAtTime(startTime: CMTime,
+    private func addVideoItemScenceAtTime(startTime: CMTime,
                                      parentLayer: CALayer,
                                      composition: AVMutableComposition,
+                                     videoAsset: AVAsset,
+                                     title: String,
                                      videoItemSize: CGSize) -> (AVMutableVideoCompositionInstruction, endTime: CMTime) {
-        var atTime = startTime
-        let tienAsset = assets[0]
+        let randomSide = Int(arc4random()) % 2 == 0
+        let startPoint = randomSide ? CGPoint(x: -parentLayer.bounds.width/2, y: parentLayer.bounds.height/2) : CGPoint(x: parentLayer.bounds.width*3/2, y: parentLayer.bounds.height/2)
+        let endPoint = randomSide ? CGPoint(x: (parentLayer.bounds.width/2 - videoItemSize.width/2)/2 - 20,
+                                            y: startPoint.y) : CGPoint(x: (parentLayer.bounds.width/2 + videoItemSize.width/2)/2 + 20, y: startPoint.y)
+        
+        let atTime = startTime
         let backgroundColor = UIColor(red: 102/255, green: 89/255, blue: 255/255, alpha: 1).CGColor
         
         let tienTitleTextLayer = CATextLayer()
-        tienTitleTextLayer.string = "Tien"
+        tienTitleTextLayer.string = title
         tienTitleTextLayer.font = font1
         tienTitleTextLayer.fontSize = 40
         tienTitleTextLayer.foregroundColor = UIColor(red: 232/255, green: 212/255, blue: 65/255, alpha: 1).CGColor
         tienTitleTextLayer.alignmentMode = kCAAlignmentRight
         tienTitleTextLayer.frame = CGRect(origin: .zero,
                                           size: CGSize(width: parentLayer.bounds.width/2 - videoItemSize.width/2, height: 50))
-        tienTitleTextLayer.position = CGPoint(x: -parentLayer.bounds.width/2, y: parentLayer.bounds.height/2)
+        tienTitleTextLayer.position = startPoint
         tienTitleTextLayer.opacity = 0.0
         parentLayer.addSublayer(tienTitleTextLayer)
         
@@ -368,39 +397,36 @@ extension MergeVideosViewController {
                   duration: 0.35,
                   beginTime: atTime.seconds + 1.0,
                   fromPoint: tienTitleTextLayer.position,
-                  toPoint: CGPoint(x: (parentLayer.bounds.width/2 - videoItemSize.width/2)/2,
-                    y: tienTitleTextLayer.position.y),
+                  toPoint: endPoint,
                   damping: true)
         
         moveLayer(tienTitleTextLayer,
                   duration: 0.35,
-                  beginTime: atTime.seconds - 1.0 + tienAsset.duration.seconds,
+                  beginTime: atTime.seconds + videoAsset.duration.seconds - 1.0,
                   fromPoint: tienTitleTextLayer.position,
-                  toPoint: CGPoint(x: -parentLayer.bounds.width/2,
-                    y: tienTitleTextLayer.position.y),
-                  damping: true)
+                  toPoint: startPoint)
         
         hideLayer(tienTitleTextLayer,
                   hidden: true,
                   duration: 0,
-                  beginTime: atTime.seconds + tienAsset.duration.seconds)
+                  beginTime: atTime.seconds + videoAsset.duration.seconds + 2)
         
         //// Instruction
-        let tienTrack = composition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
-        try! tienTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, tienAsset.duration), ofTrack: tienAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: atTime)
-        let tienLayerInstruction = videoCompositionInstructionForTrack(tienTrack,
-                                                                       asset: tienAsset,
+        let videoTrack = composition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
+        try! videoTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, videoAsset.duration), ofTrack: videoAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: atTime)
+        let tienLayerInstruction = videoCompositionInstructionForTrack(videoTrack,
+                                                                       asset: videoAsset,
                                                                        fixRotate: true,
                                                                        frame: CGRect(origin: CGPoint(x: ExportedVideoSize.width/2 - videoItemSize.width/2, y: 0),
                                                                         size: videoItemSize))
         
         let tienInstruction = AVMutableVideoCompositionInstruction()
-        tienInstruction.timeRange = CMTimeRangeMake(atTime, tienAsset.duration)
+        tienInstruction.timeRange = CMTimeRangeMake(atTime, videoAsset.duration)
         tienInstruction.backgroundColor = backgroundColor
         tienInstruction.layerInstructions = [tienLayerInstruction]
         
         
-        let endTime = CMTimeAdd(startTime, tienAsset.duration)
+        let endTime = CMTimeAdd(startTime, videoAsset.duration)
         return (tienInstruction, endTime)
         
     }
