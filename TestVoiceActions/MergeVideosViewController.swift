@@ -115,31 +115,17 @@ extension MergeVideosViewController {
         //        layerInstructions.append(tienInstruction)
         
         
+        ////////////////////////////////////////////////
         
         
         
         ////////////////////////////////////////////////
-        
-        //        let tienAsset = assets[0]
-        //        let tienTrack = mixComposition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
-        //        try! tienTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, tienAsset.duration), ofTrack: tienAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: atTime)
-        //        let tienLayerInstruction = videoCompositionInstructionForTrack(tienTrack,
-        //                                                                       asset: tienAsset,
-        //                                                                       fixRotate: true,
-        //                                                                       targetSize: videoItemSize)
-        //        tienLayerInstruction.setOpacity(0.0, atTime: atTime)
-        
         ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        var layerInstructions: [AVVideoCompositionLayerInstruction] = []
         let mixComposition = AVMutableComposition()
         var atTime: CMTime = kCMTimeZero
         
         ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        
-        
-        //////////////// Add Sence /////////////////
+        //////////////// Add Sence ////////////////////
         ///////////////////////////////////////////////
         
         let parentLayer = CALayer()
@@ -151,287 +137,33 @@ extension MergeVideosViewController {
         
         parentLayer.addSublayer(backgroundLayer)
         
+        
         let videoLayer = CALayer()
-        videoLayer.backgroundColor = UIColor.clearColor().CGColor
+        videoLayer.backgroundColor = UIColor.whiteColor().CGColor
         videoLayer.frame = CGRect(origin: .zero, size: ExportedVideoSize)
         parentLayer.addSublayer(videoLayer)
         
+        let (introInstruction, introEndTime) = addIntroScenceAtTime(atTime,
+                                                                    parentLayer: parentLayer,
+                                                                    composition: mixComposition,
+                                                                    videoItemSize: videoItemSize)
         
-        let textFontSize1: CGFloat = 60
-        ////////////////////////////////////////////////
-        addCenterTextSence(composition: mixComposition,
-                           layerInstructions: &layerInstructions,
-                           atTime: &atTime,
-                           size: videoItemSize,
-                           parentLayer: parentLayer,
-                           backgroundColor: UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1),
-                           textColor: UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1),
-                           text: "smile.",
-                           textFont: font1,
-                           textFontSize: textFontSize1,
-                           isFirstScene: true)
-        ////////////////////////////////////////////////
+        atTime = introEndTime
         
         ////////////////////////////////////////////////
-        addCenterTextSence(composition: mixComposition,
-                           layerInstructions: &layerInstructions,
-                           atTime: &atTime,
-                           size: videoItemSize,
-                           parentLayer: parentLayer,
-                           backgroundColor: UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1),
-                           textColor: UIColor(red: 110/255, green: 96/255, blue: 255/255, alpha: 1),
-                           text: "cry.",
-                           textFont: font1,
-                           textFontSize: textFontSize1)
-        ////////////////////////////////////////////////
-        
-        
-        
-        ////////////////////////////////////////////////
-        addCenterTextSence(composition: mixComposition,
-                           layerInstructions: &layerInstructions,
-                           atTime: &atTime,
-                           size: videoItemSize,
-                           parentLayer: parentLayer,
-                           backgroundColor: UIColor(red: 90/255, green: 214/255, blue: 219/255, alpha: 1),
-                           textColor: UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1),
-                           text: "surprise.",
-                           textFont: font1,
-                           textFontSize: textFontSize1)
-        ////////////////////////////////////////////////
-        
-        
-        
-        ////////////////////////////////////////////////
-        addCenterTextSence(composition: mixComposition,
-                           layerInstructions: &layerInstructions,
-                           atTime: &atTime,
-                           size: videoItemSize,
-                           parentLayer: parentLayer,
-                           backgroundColor: UIColor(red: 237/255, green: 207/255, blue: 61/255, alpha: 1),
-                           textColor: UIColor(red: 255/255, green: 66/255, blue: 102/255, alpha: 1),
-                           text: "excited.",
-                           textFont: font1,
-                           textFontSize: textFontSize1)
-        ////////////////////////////////////////////////
-        
-        
-        
-        ////////////////////////////////////////////////
-        addCenterTextSence(composition: mixComposition,
-                           layerInstructions: &layerInstructions,
-                           atTime: &atTime,
-                           size: videoItemSize,
-                           parentLayer: parentLayer,
-                           backgroundColor: UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1),
-                           textColor: UIColor(red: 240/255, green: 206/255, blue: 65/255, alpha: 1),
-                           text: "hectic.",
-                           textFont: font1,
-                           textFontSize: textFontSize1)
-        ////////////////////////////////////////////////
-        
-        
-        
-        
-        ////////////////////////////////////////////////
-        let (allAreLayer, allAreTextLayer) = addCenterTextSence(composition: mixComposition,
-                                                                layerInstructions: &layerInstructions,
-                                                                atTime: &atTime,
-                                                                size: videoItemSize,
-                                                                parentLayer: parentLayer,
-                                                                backgroundColor: UIColor(red: 102/255, green: 98/255, blue: 255/255, alpha: 1),
-                                                                textColor: UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1),
-                                                                text: "all are",
-                                                                textFont: font1,
-                                                                textFontSize: textFontSize1,
-                                                                hideWhenEnd: false)
-        ////////////////////////////////////////////////
-        
-        
-        
-        ////////////////////////////////////////////////
-        addBlankLayerInstruction(composition: mixComposition,
-                                 atTime: &atTime,
-                                 layerInstructions: &layerInstructions,
-                                 size: videoItemSize,
-                                 atTimeWillChange: {
-                                    
-                                    let reactionsTextLayer = CATextLayer()
-                                    reactionsTextLayer.string = "reactions"
-                                    reactionsTextLayer.font = self.font1
-                                    reactionsTextLayer.fontSize = textFontSize1
-                                    reactionsTextLayer.frame = CGRect(x: 0,
-                                        y: parentLayer.frame.height/2 - 10 - textFontSize1,
-                                        width: parentLayer.bounds.width,
-                                        height: reactionsTextLayer.fontSize + 10)
-                                    reactionsTextLayer.position = CGPoint(x: allAreLayer.frame.width/2,
-                                        y: allAreLayer.frame.height/2 - reactionsTextLayer.frame.height)
-                                    reactionsTextLayer.alignmentMode = kCAAlignmentCenter
-                                    reactionsTextLayer.foregroundColor = UIColor(red: 90/255, green: 216/255, blue: 218/255, alpha: 1).CGColor
-                                    reactionsTextLayer.opacity = 0.0
-                                    
-                                    allAreLayer.addSublayer(reactionsTextLayer)
-                                    
-                                    self.moveLayer(allAreTextLayer,
-                                        duration: 0.25,
-                                        beginTime: atTime.seconds,
-                                        fromPoint: allAreTextLayer.position,
-                                        toPoint: CGPoint(x: allAreTextLayer.frame.width/4 - 50, y: allAreTextLayer.position.y))
-                                    
-                                    self.hideLayer(reactionsTextLayer, hidden: false, duration: 0, beginTime: atTime.seconds)
-                                    self.moveLayer(reactionsTextLayer,
-                                        duration: 0.25,
-                                        beginTime: atTime.seconds,
-                                        fromPoint: reactionsTextLayer.position,
-                                        toPoint: CGPoint(x: allAreLayer.frame.width/2, y: allAreLayer.frame.height/2))
-                                    
-            }, atTimeDidChange: nil)
-        
-        addBlankLayerInstruction(composition: mixComposition,
-                                 atTime: &atTime,
-                                 layerInstructions: &layerInstructions,
-                                 size: videoItemSize,
-                                 atTimeWillChange: {
-                                    let withTextLayer = CATextLayer()
-                                    withTextLayer.string = "with"
-                                    withTextLayer.font = self.font1
-                                    withTextLayer.fontSize = textFontSize1
-                                    withTextLayer.frame = CGRect(x: 0,
-                                        y: parentLayer.frame.height/2 - 10 - textFontSize1,
-                                        width: allAreLayer.bounds.width,
-                                        height: withTextLayer.fontSize + 10)
-                                    withTextLayer.position = CGPoint(x: withTextLayer.frame.width/2 + withTextLayer.frame.width,
-                                        y: allAreLayer.frame.height/2)
-                                    withTextLayer.alignmentMode = kCAAlignmentCenter
-                                    withTextLayer.foregroundColor = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1).CGColor
-                                    withTextLayer.opacity = 0.0
-                                    allAreLayer.addSublayer(withTextLayer)
-                                    self.hideLayer(withTextLayer, hidden: false, duration: 0, beginTime: atTime.seconds)
-                                    self.moveLayer(withTextLayer,
-                                        duration: 0.25,
-                                        beginTime: atTime.seconds,
-                                        fromPoint: withTextLayer.position,
-                                        toPoint: CGPoint(x: allAreLayer.frame.width*3/4 + 20, y: withTextLayer.position.y))
-            }, atTimeDidChange: nil)
-        ////////////////////////////////////////////////
-        
-        
-        
-        ////////////////////////////////////////////////
-        var promptLayer: CALayer!
-        var promptImageLayer: CALayer!
-        addBlankLayerInstruction(composition: mixComposition,
-                                 atTime: &atTime,
-                                 layerInstructions: &layerInstructions,
-                                 size: videoItemSize,
-                                 atTimeWillChange: {
-                                    self.moveLayer(allAreLayer,
-                                        duration: 0.25,
-                                        beginTime: atTime.seconds,
-                                        fromPoint: allAreLayer.position,
-                                        toPoint: CGPoint(x: -allAreLayer.frame.width, y: allAreLayer.position.y))
-                                    
-                                    promptLayer = CALayer()
-                                    promptLayer.frame = CGRect(origin: CGPoint(x: parentLayer.frame.width, y: 0), size: parentLayer.frame.size)
-                                    promptLayer.backgroundColor = UIColor(red: 90/255, green: 214/255, blue: 219/255, alpha: 1).CGColor
-                                    promptLayer.opacity = 0.0
-                                    
-                                    parentLayer.addSublayer(promptLayer)
-                                    
-                                    let promptImage = UIImage(named: "prompts6.png")!.resizeImage(newHeight: videoItemSize.height)
-                                    promptImageLayer = CALayer()
-                                    promptImageLayer.contents = promptImage.CGImage
-                                    promptImageLayer.frame = CGRect(origin: .zero, size: promptImage.size)
-                                    promptImageLayer.masksToBounds = true
-                                    promptLayer.addSublayer(promptImageLayer)
-                                    
-                                    let companyLogoImage = UIImage(named: "company-logo.png")!
-                                    let companyLogoLayer = CALayer()
-                                    companyLogoLayer.contentsGravity = kCAGravityResizeAspect
-                                    companyLogoLayer.contents = companyLogoImage.CGImage
-                                    companyLogoLayer.frame = CGRect(origin: CGPoint(x: promptImageLayer.frame.maxX + 40, y: 40.0),
-                                        size: CGSize(width: 80, height: 80))
-                                    companyLogoLayer.masksToBounds = true
-                                    promptLayer.addSublayer(companyLogoLayer)
-                                    
-                                    let companyNameTextLayer = CATextLayer()
-                                    companyNameTextLayer.string = "COMPANY NAME"
-                                    companyNameTextLayer.fontSize = 40
-                                    
-                                    companyNameTextLayer.frame = CGRect(origin: .zero, size: CGSize(width: promptLayer.bounds.width, height: companyNameTextLayer.fontSize + 10))
-                                    companyNameTextLayer.anchorPoint = CGPoint(x: 0, y: 0.5)
-                                    companyNameTextLayer.position = CGPoint(x: companyLogoLayer.frame.maxX + 10, y: companyLogoLayer.position.y)
-                                    companyNameTextLayer.font = self.font1
-                                    companyNameTextLayer.foregroundColor = UIColor.blackColor().CGColor
-                                    promptLayer.addSublayer(companyNameTextLayer)
-                                    
-                                    self.hideLayer(promptLayer,
-                                        hidden: false,
-                                        duration: 0,
-                                        beginTime: atTime.seconds)
-                                    self.moveLayer(promptLayer,
-                                        duration: 0.25,
-                                        beginTime: atTime.seconds,
-                                        fromPoint: promptLayer.position,
-                                        toPoint: CGPoint(x: parentLayer.frame.width/2, y: parentLayer.frame.height/2))
-            },
-                                 atTimeDidChange: {
-                                    self.hideLayer(allAreLayer,
-                                        hidden: true,
-                                        duration: 0,
-                                        beginTime: atTime.seconds)
-        })
-        
-        addBlankLayerInstruction(composition: mixComposition,
-                                 atTime: &atTime,
-                                 layerInstructions: &layerInstructions,
-                                 size: videoItemSize,
-                                 atTimeWillChange: {
-                                    let promptTextLayer = CATextLayer()
-                                    promptTextLayer.string = "Tell me one secrect which the others in your team don't know?"
-                                    promptTextLayer.font = self.font1
-                                    promptTextLayer.wrapped = true
-                                    promptTextLayer.fontSize = 40
-                                    promptTextLayer.frame = CGRect(x: 0,
-                                        y: 0,
-                                        width: promptLayer.bounds.width - promptImageLayer.bounds.width - 50,
-                                        height: 200)
-                                    promptTextLayer.anchorPoint = CGPoint(x: 0, y: 1)
-                                    promptTextLayer.position = CGPoint(x: -promptLayer.bounds.width,
-                                        y: promptLayer.bounds.height - 80)
-                                    promptTextLayer.alignmentMode = kCAAlignmentLeft
-                                    promptTextLayer.foregroundColor = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1).CGColor
-                                    promptTextLayer.opacity = 0.0
-                                    promptLayer.addSublayer(promptTextLayer)
-                                    
-                                    self.hideLayer(promptTextLayer,
-                                        hidden: false,
-                                        duration: 0,
-                                        beginTime: atTime.seconds)
-                                    
-                                    self.moveLayer(promptTextLayer,
-                                        duration: 0.25,
-                                        beginTime: atTime.seconds,
-                                        fromPoint: promptTextLayer.position,
-                                        toPoint: CGPoint(x: promptImageLayer.frame.maxX + 40,
-                                            y: promptTextLayer.position.y),
-                                        damping: true)
-                                    
-            }, atTimeDidChange: nil)
-        
+        let (tienInstruction, tienEndTime) = addTienScenceAtTime(atTime,
+                                                                 parentLayer: parentLayer,
+                                                                 composition: mixComposition,
+                                                                 videoItemSize: videoItemSize)
+        atTime = tienEndTime
         ////////////////////////////////////////////////
         
         
         ////////////////////////////////////////////////
         ////////////////////////////////////////////////
-        
-        let mainInstruction = AVMutableVideoCompositionInstruction()
-        mainInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, CMTime(seconds: 120, preferredTimescale: kCMTimeZero.timescale))
-        mainInstruction.layerInstructions = layerInstructions
-        
         let renderSize = ExportedVideoSize
-        let mainComposition = AVMutableVideoComposition()
-        mainComposition.instructions = [mainInstruction]
+        let mainComposition = AVMutableVideoComposition(propertiesOfAsset: mixComposition)
+        mainComposition.instructions = [introInstruction, tienInstruction]
         mainComposition.frameDuration = CMTimeMake(1, 30)
         mainComposition.renderSize = renderSize
         
@@ -470,8 +202,17 @@ extension MergeVideosViewController {
         }
     }
     
-    private func addEmptyDuration() {
-        
+    private func setVideoDuration(duration: CMTime,
+                                  composition: AVMutableComposition,
+                                  videoSize: CGSize) -> AVMutableVideoCompositionLayerInstruction {
+        let blankTrack = composition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
+        try! blankTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, duration), ofTrack: blankVideoAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: kCMTimeZero)
+        let layerInstruction = videoCompositionInstructionForTrack(blankTrack,
+                                                                   asset: blankVideoAsset,
+                                                                   fixRotate: true,
+                                                                   frame: CGRect(origin: .zero, size: videoSize))
+        layerInstruction.setOpacity(0.0, atTime: CMTimeAdd(kCMTimeZero, duration))
+        return layerInstruction
     }
     
     private func addLayerInstruction(layerInstruction: AVMutableVideoCompositionLayerInstruction,
@@ -490,6 +231,7 @@ extension MergeVideosViewController {
         let fromValue = hidden ? 1.0 : 0.0
         let toValue = hidden ? 0.0 : 1.0
         let beginTime = beginTime == 0.0 ? AVCoreAnimationBeginTimeAtZero : beginTime
+        
         let hideAnimation = CABasicAnimation(keyPath: "opacity")
         hideAnimation.duration = duration
         hideAnimation.removedOnCompletion = false
@@ -510,7 +252,7 @@ extension MergeVideosViewController {
         let beginTime = beginTime == 0.0 ? AVCoreAnimationBeginTimeAtZero : beginTime
         
         if damping {
-            let hideAnimation = CASpringAnimation(keyPath: "position.x")
+            let hideAnimation = CASpringAnimation(keyPath: "position")
             hideAnimation.damping = 10.0
             hideAnimation.initialVelocity = 0.7
             hideAnimation.beginTime = beginTime
@@ -518,6 +260,7 @@ extension MergeVideosViewController {
             hideAnimation.fromValue = NSValue(CGPoint: fromPoint)
             hideAnimation.toValue = NSValue(CGPoint: toPoint)
             hideAnimation.duration = hideAnimation.settlingDuration
+            hideAnimation.fillMode = kCAFillModeForwards
             layer.addAnimation(hideAnimation, forKey: "animatePosition\(NSDate().timeIntervalSince1970)")
         } else {
             let hideAnimation = CABasicAnimation(keyPath: "position")
@@ -557,68 +300,461 @@ extension MergeVideosViewController {
         return (layer, textLayer)
     }
     
-    private func addBlankLayerInstruction(composition composition: AVMutableComposition,
-                                                      inout atTime: CMTime,
-                                                            inout layerInstructions: [AVVideoCompositionLayerInstruction],
-                                                                  size: CGSize,
-                                                                  atTimeWillChange: (() -> Void)?,
-                                                                  atTimeDidChange: (() -> Void)?) {
-        let blankTrack = composition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
-        try! blankTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, blankVideoAsset.duration), ofTrack: blankVideoAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: atTime)
-        let layerInstruction = videoCompositionInstructionForTrack(blankTrack,
-                                                                   asset: blankVideoAsset,
-                                                                   fixRotate: true,
-                                                                   targetSize: size)
+    
+    private func addCenterTextSenceAtTime(inout atTime: CMTime,
+                                                size: CGSize,
+                                                parentLayer: CALayer,
+                                                backgroundColor: UIColor,
+                                                textColor: UIColor,
+                                                text: String,
+                                                textFont: UIFont,
+                                                textFontSize: CGFloat,
+                                                hideWhenEnd: Bool = true,
+                                                isFirstScene: Bool = false,
+                                                duration: Int64) -> (backgroundLayer: CALayer, textLayer: CATextLayer) {
         
-        atTimeWillChange?()
+        let result = blankCenterTextLayer(backgroundColor: backgroundColor,
+                                          frame: parentLayer.bounds,
+                                          text: text,
+                                          textColor: textColor,
+                                          textFont: textFont,
+                                          textFontSize: textFontSize)
+        parentLayer.addSublayer(result.layer)
+        if !isFirstScene {
+            result.layer.opacity = 0.0
+        }
+        self.hideLayer(result.layer, hidden: false, duration: 0, beginTime: atTime.seconds)
         
-        atTime = CMTimeAdd(atTime, blankVideoAsset.duration)
+        atTime = CMTimeAdd(atTime, CMTimeMake(duration, kCMTimeZero.timescale))
+        
+        if hideWhenEnd {
+            self.hideLayer(result.layer, hidden: true, duration: 0, beginTime: atTime.seconds)
+        }
+        return (result.layer, result.textLayer)
+    }
+    
+}
+
+
+// MARK: - Hard code
+
+extension MergeVideosViewController {
+    private func addTienScenceAtTime(startTime: CMTime,
+                                     parentLayer: CALayer,
+                                     composition: AVMutableComposition,
+                                     videoItemSize: CGSize) -> (AVMutableVideoCompositionInstruction, endTime: CMTime) {
+        var atTime = startTime
+        let tienAsset = assets[0]
+        let backgroundColor = UIColor(red: 102/255, green: 89/255, blue: 255/255, alpha: 1).CGColor
+        
+        let tienTitleTextLayer = CATextLayer()
+        tienTitleTextLayer.string = "Tien"
+        tienTitleTextLayer.font = font1
+        tienTitleTextLayer.fontSize = 40
+        tienTitleTextLayer.foregroundColor = UIColor(red: 232/255, green: 212/255, blue: 65/255, alpha: 1).CGColor
+        tienTitleTextLayer.alignmentMode = kCAAlignmentRight
+        tienTitleTextLayer.frame = CGRect(origin: .zero,
+                                          size: CGSize(width: parentLayer.bounds.width/2 - videoItemSize.width/2, height: 50))
+        tienTitleTextLayer.position = CGPoint(x: -parentLayer.bounds.width/2, y: parentLayer.bounds.height/2)
+        tienTitleTextLayer.opacity = 0.0
+        parentLayer.addSublayer(tienTitleTextLayer)
+        
+        hideLayer(tienTitleTextLayer,
+                  hidden: false,
+                  duration: 0,
+                  beginTime: atTime.seconds + 0.5)
+        
+        moveLayer(tienTitleTextLayer,
+                  duration: 0.35,
+                  beginTime: atTime.seconds + 1.0,
+                  fromPoint: tienTitleTextLayer.position,
+                  toPoint: CGPoint(x: (parentLayer.bounds.width/2 - videoItemSize.width/2)/2,
+                    y: tienTitleTextLayer.position.y),
+                  damping: true)
+        
+        moveLayer(tienTitleTextLayer,
+                  duration: 0.35,
+                  beginTime: atTime.seconds - 1.0 + tienAsset.duration.seconds,
+                  fromPoint: tienTitleTextLayer.position,
+                  toPoint: CGPoint(x: -parentLayer.bounds.width/2,
+                    y: tienTitleTextLayer.position.y),
+                  damping: true)
+        
+        hideLayer(tienTitleTextLayer,
+                  hidden: true,
+                  duration: 0,
+                  beginTime: atTime.seconds + tienAsset.duration.seconds)
+        
+        //// Instruction
+        let tienTrack = composition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
+        try! tienTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, tienAsset.duration), ofTrack: tienAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: atTime)
+        let tienLayerInstruction = videoCompositionInstructionForTrack(tienTrack,
+                                                                       asset: tienAsset,
+                                                                       fixRotate: true,
+                                                                       frame: CGRect(origin: CGPoint(x: ExportedVideoSize.width/2 - videoItemSize.width/2, y: 0),
+                                                                        size: videoItemSize))
+        
+        let tienInstruction = AVMutableVideoCompositionInstruction()
+        tienInstruction.timeRange = CMTimeRangeMake(atTime, tienAsset.duration)
+        tienInstruction.backgroundColor = backgroundColor
+        tienInstruction.layerInstructions = [tienLayerInstruction]
+        
+        
+        let endTime = CMTimeAdd(startTime, tienAsset.duration)
+        return (tienInstruction, endTime)
+        
+    }
+    
+    private func addIntroScenceAtTime(startTime: CMTime,
+                                      parentLayer: CALayer,
+                                      composition: AVMutableComposition,
+                                      videoItemSize: CGSize) -> (instruction: AVMutableVideoCompositionInstruction, endTime: CMTime) {
+        var atTime = startTime
+        let textFontSize1: CGFloat = 60
+        ////////////////////////////////////////////////
+        addCenterTextSenceAtTime(&atTime,
+                                 size: videoItemSize,
+                                 parentLayer: parentLayer,
+                                 backgroundColor: UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1),
+                                 textColor: UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1),
+                                 text: "smile.",
+                                 textFont: font1,
+                                 textFontSize: textFontSize1,
+                                 isFirstScene: true,
+                                 duration: 1)
+        ////////////////////////////////////////////////
+        
+        ////////////////////////////////////////////////
+        addCenterTextSenceAtTime(&atTime,
+                                 size: videoItemSize,
+                                 parentLayer: parentLayer,
+                                 backgroundColor: UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1),
+                                 textColor: UIColor(red: 110/255, green: 96/255, blue: 255/255, alpha: 1),
+                                 text: "cry.",
+                                 textFont: font1,
+                                 textFontSize: textFontSize1,
+                                 duration: 1)
+        ////////////////////////////////////////////////
+        
+        
+        
+        ////////////////////////////////////////////////
+        addCenterTextSenceAtTime(&atTime,
+                                 size: videoItemSize,
+                                 parentLayer: parentLayer,
+                                 backgroundColor: UIColor(red: 90/255, green: 214/255, blue: 219/255, alpha: 1),
+                                 textColor: UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1),
+                                 text: "surprise.",
+                                 textFont: font1,
+                                 textFontSize: textFontSize1,
+                                 duration: 1)
+        ////////////////////////////////////////////////
+        
+        
+        
+        ////////////////////////////////////////////////
+        addCenterTextSenceAtTime(&atTime,
+                                 size: videoItemSize,
+                                 parentLayer: parentLayer,
+                                 backgroundColor: UIColor(red: 237/255, green: 207/255, blue: 61/255, alpha: 1),
+                                 textColor: UIColor(red: 255/255, green: 66/255, blue: 102/255, alpha: 1),
+                                 text: "excited.",
+                                 textFont: font1,
+                                 textFontSize: textFontSize1,
+                                 duration: 1)
+        ////////////////////////////////////////////////
+        
+        
+        
+        ////////////////////////////////////////////////
+        addCenterTextSenceAtTime(&atTime,
+                                 size: videoItemSize,
+                                 parentLayer: parentLayer,
+                                 backgroundColor: UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1),
+                                 textColor: UIColor(red: 240/255, green: 206/255, blue: 65/255, alpha: 1),
+                                 text: "hectic.",
+                                 textFont: font1,
+                                 textFontSize: textFontSize1,
+                                 duration: 1)
+        ////////////////////////////////////////////////
+        
+        
+        
+        
+        ////////////////////////////////////////////////
+        let (allAreLayer, allAreTextLayer) = addCenterTextSenceAtTime(&atTime,
+                                                                      size: videoItemSize,
+                                                                      parentLayer: parentLayer,
+                                                                      backgroundColor: UIColor(red: 102/255, green: 98/255, blue: 255/255, alpha: 1),
+                                                                      textColor: UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1),
+                                                                      text: "all are",
+                                                                      textFont: font1,
+                                                                      textFontSize: textFontSize1,
+                                                                      hideWhenEnd: false,
+                                                                      duration: 1)
+        addReactionsAndWithAtTime(&atTime,
+                                  parentLayer: parentLayer,
+                                  allAreLayer: allAreLayer,
+                                  allAreTextLayer: allAreTextLayer,
+                                  textFontSize: textFontSize1)
+        ////////////////////////////////////////////////
+        
+        
+        
+        
+        ////////////////////////////////////////////////
+        let promptLayer = addPromptSceneAtTime(&atTime,
+                                               parentLayer: parentLayer,
+                                               allAreLayer: allAreLayer,
+                                               videoSize: videoItemSize)
+        hideLayer(promptLayer,
+                  hidden: true,
+                  duration: 0,
+                  beginTime: atTime.seconds)
+        ////////////////////////////////////////////////
+        
+        //        let VideoDuration = Int64(18)
+        let layerInstruction = setVideoDuration(atTime,
+                                                composition: composition,
+                                                videoSize: ExportedVideoSize)
         layerInstruction.setOpacity(0.0, atTime: atTime)
-        layerInstructions.append(layerInstruction)
         
-        atTimeDidChange?()
+        let introInstruction = AVMutableVideoCompositionInstruction()
+        introInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, atTime)
+        introInstruction.layerInstructions = [layerInstruction]
+        
+        return (introInstruction, atTime)
     }
     
     
-    private func addCenterTextSence(composition composition: AVMutableComposition,
-                                                inout layerInstructions: [AVVideoCompositionLayerInstruction],
-                                                      inout atTime: CMTime,
-                                                            size: CGSize,
-                                                            parentLayer: CALayer,
-                                                            backgroundColor: UIColor,
-                                                            textColor: UIColor,
-                                                            text: String,
-                                                            textFont: UIFont,
-                                                            textFontSize: CGFloat,
-                                                            hideWhenEnd: Bool = true,
-                                                            isFirstScene: Bool = false) -> (backgroundLayer: CALayer, textLayer: CATextLayer) {
+    private func addPromptSceneAtTime(inout atTime: CMTime,
+                                            parentLayer: CALayer,
+                                            allAreLayer: CALayer,
+                                            videoSize: CGSize) -> CALayer {
+        var promptLayer: CALayer!
+        var promptImageLayer: CALayer!
+        var companyLogoLayer: CALayer!
+        var companyNameTextLayer: CATextLayer!
         
-        var result: (layer: CALayer, textLayer: CATextLayer)!
+        self.moveLayer(allAreLayer,
+                       duration: 0.25,
+                       beginTime: atTime.seconds,
+                       fromPoint: allAreLayer.position,
+                       toPoint: CGPoint(x: -allAreLayer.frame.width, y: allAreLayer.position.y))
         
-        addBlankLayerInstruction(composition: composition,
-                                 atTime: &atTime,
-                                 layerInstructions: &layerInstructions,
-                                 size: size,
-                                 atTimeWillChange: {
-                                    result = self.blankCenterTextLayer(backgroundColor: backgroundColor,
-                                        frame: parentLayer.bounds,
-                                        text: text,
-                                        textColor: textColor,
-                                        textFont: textFont,
-                                        textFontSize: textFontSize)
-                                    parentLayer.addSublayer(result.layer)
-                                    if !isFirstScene {
-                                        result.layer.opacity = 0.0
-                                    }
-                                    self.hideLayer(result.layer, hidden: false, duration: 0, beginTime: atTime.seconds)
-            },
-                                 atTimeDidChange: {
-                                    if hideWhenEnd {
-                                        self.hideLayer(result.layer, hidden: true, duration: 0, beginTime: atTime.seconds)
-                                    }
-        })
+        promptLayer = CALayer()
+        promptLayer.frame = CGRect(origin: CGPoint(x: parentLayer.frame.width, y: 0), size: parentLayer.frame.size)
+        promptLayer.backgroundColor = UIColor(red: 90/255, green: 214/255, blue: 219/255, alpha: 1).CGColor
+        promptLayer.opacity = 0.0
         
-        return (result.layer, result.textLayer)
+        parentLayer.addSublayer(promptLayer)
+        
+        let promptImage = UIImage(named: "prompts6.png")!.resizeImage(newHeight: videoSize.height)
+        promptImageLayer = CALayer()
+        promptImageLayer.contents = promptImage.CGImage
+        promptImageLayer.frame = CGRect(origin: .zero, size: promptImage.size)
+        promptImageLayer.masksToBounds = true
+        promptLayer.addSublayer(promptImageLayer)
+        
+        let companyLogoImage = UIImage(named: "company-logo.png")!
+        companyLogoLayer = CALayer()
+        companyLogoLayer.contentsGravity = kCAGravityResizeAspect
+        companyLogoLayer.contents = companyLogoImage.CGImage
+        companyLogoLayer.frame = CGRect(origin: CGPoint(x: promptImageLayer.frame.maxX + 40, y: 40.0),
+                                        size: CGSize(width: 80, height: 80))
+        companyLogoLayer.masksToBounds = true
+        promptLayer.addSublayer(companyLogoLayer)
+        
+        companyNameTextLayer = CATextLayer()
+        companyNameTextLayer.string = "COMPANY NAME"
+        companyNameTextLayer.fontSize = 40
+        
+        companyNameTextLayer.frame = CGRect(origin: .zero, size: CGSize(width: promptLayer.bounds.width, height: companyNameTextLayer.fontSize + 10))
+        companyNameTextLayer.anchorPoint = CGPoint(x: 0, y: 0.5)
+        companyNameTextLayer.position = CGPoint(x: companyLogoLayer.frame.maxX + 10, y: companyLogoLayer.position.y)
+        companyNameTextLayer.font = self.font1
+        companyNameTextLayer.foregroundColor = UIColor.blackColor().CGColor
+        promptLayer.addSublayer(companyNameTextLayer)
+        
+        self.hideLayer(promptLayer,
+                       hidden: false,
+                       duration: 0,
+                       beginTime: atTime.seconds)
+        self.moveLayer(promptLayer,
+                       duration: 0.25,
+                       beginTime: atTime.seconds,
+                       fromPoint: promptLayer.position,
+                       toPoint: CGPoint(x: parentLayer.frame.width/2, y: parentLayer.frame.height/2))
+        
+        atTime = CMTimeAdd(atTime, CMTimeMake(1, kCMTimeZero.timescale))
+        
+        self.hideLayer(allAreLayer,
+                       hidden: true,
+                       duration: 0,
+                       beginTime: atTime.seconds)
+        
+        
+        
+        let promptTextLayer = CATextLayer()
+        promptTextLayer.string = "Tell me one secrect which the others in your team don't know?"
+        promptTextLayer.font = self.font1
+        promptTextLayer.wrapped = true
+        promptTextLayer.fontSize = 40
+        promptTextLayer.frame = CGRect(x: 0,
+                                       y: 0,
+                                       width: promptLayer.bounds.width - promptImageLayer.bounds.width - 50,
+                                       height: 200)
+        promptTextLayer.anchorPoint = CGPoint(x: 0, y: 1)
+        promptTextLayer.position = CGPoint(x: -promptLayer.bounds.width,
+                                           y: promptLayer.bounds.height - 80)
+        promptTextLayer.alignmentMode = kCAAlignmentLeft
+        promptTextLayer.foregroundColor = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1).CGColor
+        promptTextLayer.opacity = 0.0
+        promptLayer.addSublayer(promptTextLayer)
+        
+        self.hideLayer(promptTextLayer,
+                       hidden: false,
+                       duration: 0,
+                       beginTime: atTime.seconds)
+        
+        self.moveLayer(promptTextLayer,
+                       duration: 0.25,
+                       beginTime: atTime.seconds,
+                       fromPoint: promptTextLayer.position,
+                       toPoint: CGPoint(x: promptImageLayer.frame.maxX + 40,
+                        y: promptTextLayer.position.y),
+                       damping: true)
+        
+        atTime = CMTimeAdd(atTime, CMTimeMake(5, kCMTimeZero.timescale))
+        
+        ////////////////////////////////////////////////
+        let duration = 0.5
+        self.moveLayer(promptTextLayer,
+                       duration: duration,
+                       beginTime: atTime.seconds,
+                       fromPoint: promptTextLayer.position,
+                       toPoint: CGPoint(x: -promptTextLayer.bounds.width,
+                        y: promptTextLayer.position.y),
+                       damping: true)
+        
+        self.moveLayer(companyLogoLayer,
+                       duration: duration,
+                       beginTime: atTime.seconds,
+                       fromPoint: companyLogoLayer.position,
+                       toPoint: CGPoint(x: companyLogoLayer.position.x, y: -companyLogoLayer.bounds.height),
+                       damping: true)
+        
+        self.moveLayer(companyNameTextLayer,
+                       duration: duration,
+                       beginTime: atTime.seconds,
+                       fromPoint: companyNameTextLayer.position,
+                       toPoint: CGPoint(x: companyNameTextLayer.position.x, y: -companyNameTextLayer.bounds.height),
+                       damping: true)
+        
+        
+        atTime = CMTimeAdd(atTime, CMTimeMake(1, kCMTimeZero.timescale))
+        
+        self.hideLayer(companyNameTextLayer,
+                       hidden: true,
+                       duration: 0,
+                       beginTime: atTime.seconds)
+        self.hideLayer(companyLogoLayer,
+                       hidden: true, duration: 0,
+                       beginTime: atTime.seconds)
+        self.hideLayer(promptTextLayer,
+                       hidden: true, duration: 0,
+                       beginTime: atTime.seconds)
+        
+        
+        let promptPeopleReact = CATextLayer()
+        promptPeopleReact.font = self.font1
+        promptPeopleReact.wrapped = true
+        promptPeopleReact.fontSize = 60
+        promptPeopleReact.string = "Let see how people react…"
+        promptPeopleReact.frame = CGRect(origin: .zero,
+                                         size: CGSize(width: promptLayer.bounds.width - promptImageLayer.bounds.width - 70, height: 200.0))
+        promptPeopleReact.anchorPoint = CGPoint(x: 0, y: 0.5)
+        promptPeopleReact.position = CGPoint(x: -promptPeopleReact.bounds.width, y: promptLayer.bounds.height/2)
+        promptPeopleReact.opacity = 0.0
+        promptPeopleReact.alignmentMode = kCAAlignmentLeft
+        promptLayer.addSublayer(promptPeopleReact)
+        
+        self.hideLayer(promptPeopleReact,
+                       hidden: false,
+                       duration: 0,
+                       beginTime: atTime.seconds)
+        moveLayer(promptPeopleReact,
+                  duration: duration,
+                  beginTime: atTime.seconds,
+                  fromPoint: promptPeopleReact.position,
+                  toPoint: CGPoint(x: promptImageLayer.frame.maxX + 40, y: promptPeopleReact.position.y),
+                  damping: true)
+        
+        atTime = CMTimeAdd(atTime, CMTimeMake(3, kCMTimeZero.timescale))
+        
+        return promptLayer
+    }
+    
+    
+    private func addReactionsAndWithAtTime(inout atTime: CMTime,
+                                                 parentLayer: CALayer,
+                                                 allAreLayer: CALayer,
+                                                 allAreTextLayer: CATextLayer,
+                                                 textFontSize: CGFloat) {
+        let reactionsTextLayer = CATextLayer()
+        reactionsTextLayer.string = "reactions"
+        reactionsTextLayer.font = self.font1
+        reactionsTextLayer.fontSize = textFontSize
+        reactionsTextLayer.frame = CGRect(x: 0,
+                                          y: parentLayer.frame.height/2 - 10 - textFontSize,
+                                          width: parentLayer.bounds.width,
+                                          height: reactionsTextLayer.fontSize + 10)
+        reactionsTextLayer.position = CGPoint(x: allAreLayer.frame.width/2,
+                                              y: allAreLayer.frame.height/2 - reactionsTextLayer.frame.height)
+        reactionsTextLayer.alignmentMode = kCAAlignmentCenter
+        reactionsTextLayer.foregroundColor = UIColor(red: 90/255, green: 216/255, blue: 218/255, alpha: 1).CGColor
+        reactionsTextLayer.opacity = 0.0
+        
+        allAreLayer.addSublayer(reactionsTextLayer)
+        
+        self.moveLayer(allAreTextLayer,
+                       duration: 0.25,
+                       beginTime: atTime.seconds,
+                       fromPoint: allAreTextLayer.position,
+                       toPoint: CGPoint(x: allAreTextLayer.frame.width/4 - 50, y: allAreTextLayer.position.y))
+        
+        self.hideLayer(reactionsTextLayer, hidden: false, duration: 0, beginTime: atTime.seconds)
+        self.moveLayer(reactionsTextLayer,
+                       duration: 0.25,
+                       beginTime: atTime.seconds,
+                       fromPoint: reactionsTextLayer.position,
+                       toPoint: CGPoint(x: allAreLayer.frame.width/2, y: allAreLayer.frame.height/2))
+        
+        atTime = CMTimeAdd(atTime, CMTimeMake(1, kCMTimeZero.timescale))
+        
+        
+        let withTextLayer = CATextLayer()
+        withTextLayer.string = "with"
+        withTextLayer.font = self.font1
+        withTextLayer.fontSize = textFontSize
+        withTextLayer.frame = CGRect(x: 0,
+                                     y: parentLayer.frame.height/2 - 10 - textFontSize,
+                                     width: allAreLayer.bounds.width,
+                                     height: withTextLayer.fontSize + 10)
+        withTextLayer.position = CGPoint(x: withTextLayer.frame.width/2 + withTextLayer.frame.width,
+                                         y: allAreLayer.frame.height/2)
+        withTextLayer.alignmentMode = kCAAlignmentCenter
+        withTextLayer.foregroundColor = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1).CGColor
+        withTextLayer.opacity = 0.0
+        allAreLayer.addSublayer(withTextLayer)
+        self.hideLayer(withTextLayer, hidden: false, duration: 0, beginTime: atTime.seconds)
+        self.moveLayer(withTextLayer,
+                       duration: 0.25,
+                       beginTime: atTime.seconds,
+                       fromPoint: withTextLayer.position,
+                       toPoint: CGPoint(x: allAreLayer.frame.width*3/4 + 20, y: withTextLayer.position.y))
+        atTime = CMTimeAdd(atTime, CMTimeMake(1, kCMTimeZero.timescale))
+        
     }
 }
 
@@ -662,7 +798,7 @@ extension MergeVideosViewController {
             let instruction = videoCompositionInstructionForTrack(videoTrack,
                                                                   asset: asset,
                                                                   fixRotate: fixRotate,
-                                                                  targetSize: DefaultVideoItemSize) //TODO:
+                                                                  frame: CGRect(origin: .zero, size: DefaultVideoItemSize)) //TODO:
             if index < assets.count - 1 {
                 instruction.setOpacity(0.0, atTime: atTime)
             }
@@ -782,7 +918,7 @@ extension MergeVideosViewController {
     private func videoCompositionInstructionForTrack(track: AVCompositionTrack,
                                                      asset: AVAsset,
                                                      fixRotate: Bool,
-                                                     targetSize: CGSize) -> AVMutableVideoCompositionLayerInstruction {
+                                                     frame: CGRect) -> AVMutableVideoCompositionLayerInstruction {
         let instruction = AVMutableVideoCompositionLayerInstruction(assetTrack: track)
         if fixRotate {
             let assetTrack = asset.tracksWithMediaType(AVMediaTypeVideo)[0]
@@ -791,27 +927,29 @@ extension MergeVideosViewController {
             
             debugPrint("Asset nature size: \(assetTrack.naturalSize)")
             
-            var scaleToFitRatio = targetSize.width / assetTrack.naturalSize.width
+            var scaleToFitRatio = frame.width / assetTrack.naturalSize.width
+            var layerTransfrom: CGAffineTransform!
             debugPrint("Scale ratio: \(scaleToFitRatio)")
             if assetInfo.isPortrait {
-                scaleToFitRatio = targetSize.width / assetTrack.naturalSize.height
+                scaleToFitRatio = frame.width / assetTrack.naturalSize.height
                 let scaleFactor = CGAffineTransformMakeScale(scaleToFitRatio, scaleToFitRatio)
-                instruction.setTransform(CGAffineTransformConcat(assetTrack.preferredTransform, scaleFactor), atTime: kCMTimeZero)
+                layerTransfrom = CGAffineTransformConcat(assetTrack.preferredTransform, scaleFactor)
             } else {
                 let scaleFactor = CGAffineTransformMakeScale(scaleToFitRatio, scaleToFitRatio)
                 if assetInfo.orientation == .Down {
-                    var concat = CGAffineTransformConcat(CGAffineTransformConcat(assetTrack.preferredTransform, scaleFactor), CGAffineTransformMakeTranslation(0, targetSize.width / 2))
+                    //                    let concat = CGAffineTransformConcat(CGAffineTransformConcat(assetTrack.preferredTransform, scaleFactor), CGAffineTransformMakeTranslation(0, frame.width / 2))
                     let fixUpsideDown = CGAffineTransformMakeRotation(CGFloat(M_PI))
-                    let windowBounds = CGRect(origin: .zero, size: targetSize)
+                    let windowBounds = CGRect(origin: .zero, size: frame.size)
                     let yFix = assetTrack.naturalSize.height + windowBounds.height
                     let centerFix = CGAffineTransformMakeTranslation(assetTrack.naturalSize.width, yFix)
-                    concat = CGAffineTransformConcat(CGAffineTransformConcat(fixUpsideDown, centerFix), scaleFactor)
-                    instruction.setTransform(concat, atTime: kCMTimeZero)
+                    layerTransfrom = CGAffineTransformConcat(CGAffineTransformConcat(fixUpsideDown, centerFix), scaleFactor)
                 } else {
-                    instruction.setTransform(scaleFactor, atTime: kCMTimeZero)
+                    layerTransfrom = scaleFactor
                 }
             }
-            
+            let postionTransfrom = CGAffineTransformMakeTranslation(frame.minX, frame.minY)
+            layerTransfrom = CGAffineTransformConcat(layerTransfrom, postionTransfrom)
+            instruction.setTransform(layerTransfrom, atTime: kCMTimeZero)
             debugPrint("Video item scale: \(scaleToFitRatio)")
         }
         
