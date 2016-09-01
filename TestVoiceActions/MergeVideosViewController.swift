@@ -33,10 +33,10 @@ class MergeVideosViewController: UIViewController {
     let playerController = AVPlayerViewController()
     
     var blankAudioAsset: AVAsset!
+    var applauseAudioAsset: AVAsset!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        //Load asset
         loadAssets()
     }
 }
@@ -85,40 +85,6 @@ extension MergeVideosViewController {
         
         let videoItemSize = CGSize(width: DefaultVideoItemSize.width * ExportedVideoSize.height / DefaultVideoItemSize.height, height: ExportedVideoSize.height)
         debugPrint("Video item size: \(videoItemSize)")
-        
-        //        let bgAudioTrack = mixComposition.addMutableTrackWithMediaType(AVMediaTypeAudio, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
-        //        try! bgAudioTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, audioAsset.duration), ofTrack: audioAsset.tracksWithMediaType(AVMediaTypeAudio)[0], atTime: kCMTimeZero)
-        //        let audioLayerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: bgAudioTrack)
-        //        layerInstructions.append(audioLayerInstruction)
-        
-        //        let emptyTrack = mixComposition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
-        //        atTime = CMTimeAdd(atTime, CMTime(seconds: 17, preferredTimescale: kCMTimeZero.timescale))
-        //        emptyTrack.insertEmptyTimeRange(CMTimeRange(start: kCMTimeZero, duration: atTime))
-        
-        //        let blankTrack = mixComposition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
-        //        try! blankTrack.insertTimeRange(CMTimeRange(start: kCMTimeZero, duration: CMTimeMake(2, kCMTimeZero.timescale)), ofTrack: blankTrack, atTime: kCMTimeZero)
-        //        let blankInstruction = videoCompositionInstructionForTrack(blankTrack,
-        //                                                                   asset: blankVideoAsset,
-        //                                                                   fixRotate: true,
-        //                                                                   targetSize: videoItemSize)
-        //        layerInstructions.append(blankInstruction)
-        
-        
-        
-        
-        //        let tienAsset = assets[0]
-        //        let tienTrack = mixComposition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
-        //        try! tienTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, tienAsset.duration), ofTrack: tienAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: kCMTimeZero)
-        //        let tienInstruction = videoCompositionInstructionForTrack(tienTrack,
-        //                                                                  asset: tienAsset,
-        //                                                                  fixRotate: true,
-        //                                                                  targetSize: videoItemSize)
-        ////        tienInstruction.setOpacity(0.0, atTime: atTime)
-        //        layerInstructions.append(tienInstruction)
-        
-        
-        ////////////////////////////////////////////////
-        
         
         
         ////////////////////////////////////////////////
@@ -178,7 +144,8 @@ extension MergeVideosViewController {
                                                                   composition: mixComposition,
                                                                   videoAsset: asset,
                                                                   title: title,
-                                                                  videoItemSize: videoItemSize)
+                                                                  videoItemSize: videoItemSize,
+                                                                  videoItemIndex: index)
             atTime = endTime
             instructions.append(instruction)
         }
@@ -432,6 +399,23 @@ extension MergeVideosViewController {
     }
     
     
+    private func emitterCellFromImageName(imageName: String) -> CAEmitterCell {
+        let fireworkCell = CAEmitterCell()
+        fireworkCell.contents = UIImage(named: imageName)!.CGImage
+        fireworkCell.birthRate = 21
+        fireworkCell.scale = 0.6
+        fireworkCell.velocity = 130
+        fireworkCell.lifetime = 100
+        fireworkCell.alphaSpeed = -0.2
+        fireworkCell.yAcceleration = -80
+        fireworkCell.beginTime = 1.5
+        fireworkCell.duration = 0.1
+        fireworkCell.emissionRange = 2 * CGFloat(M_PI)
+        fireworkCell.scaleSpeed = -0.1
+        fireworkCell.spin = 2
+        return fireworkCell
+    }
+    
 }
 
 
@@ -607,7 +591,7 @@ extension MergeVideosViewController {
                      beginTime: atTime.seconds,
                      damping: true)
         
-        atTime = CMTimeAdd(atTime, CMTimeMake(1, kCMTimeZero.timescale))
+        atTime = CMTimeAdd(atTime, CMTimeMake(5, kCMTimeZero.timescale))
         
         
         
@@ -635,7 +619,9 @@ extension MergeVideosViewController {
                                           composition: AVMutableComposition,
                                           videoAsset: AVAsset,
                                           title: String,
-                                          videoItemSize: CGSize) -> (AVMutableVideoCompositionInstruction, endTime: CMTime) {
+                                          videoItemSize: CGSize,
+                                          videoItemIndex: Int) -> (AVMutableVideoCompositionInstruction, endTime: CMTime) {
+        var videoAssetDuration = videoAsset.duration
         let randomSide = arc4random_uniform(2) == 0
         let startPoint = randomSide ? CGPoint(x: -parentLayer.bounds.width/2, y: parentLayer.bounds.height/2) : CGPoint(x: parentLayer.bounds.width*3/2, y: parentLayer.bounds.height/2)
         let endPoint = randomSide ? CGPoint(x: (parentLayer.bounds.width/2 - videoItemSize.width) - 40,
@@ -661,6 +647,7 @@ extension MergeVideosViewController {
                   duration: 0,
                   beginTime: atTime.seconds + 0.5)
         
+        
         moveLayer(tienTitleTextLayer,
                   duration: 0.35,
                   beginTime: atTime.seconds + 1.0,
@@ -670,18 +657,119 @@ extension MergeVideosViewController {
         
         moveLayer(tienTitleTextLayer,
                   duration: 0.35,
-                  beginTime: atTime.seconds + videoAsset.duration.seconds - 1.0,
+                  beginTime: atTime.seconds + videoAssetDuration.seconds - 1.0,
                   fromPoint: tienTitleTextLayer.position,
                   toPoint: startPoint)
         
         hideLayer(tienTitleTextLayer,
                   hidden: true,
                   duration: 0,
-                  beginTime: atTime.seconds + videoAsset.duration.seconds + 2)
+                  beginTime: atTime.seconds + videoAssetDuration.seconds + 2)
         
+        
+        if videoItemIndex == 0 {
+            var beginTime = CMTimeAdd(startTime, videoAssetDuration)
+            
+            let image = videoAsset.previewImageAtTime(videoAsset.duration)
+            let firstImageLayer = imageLayer(image!.resizeImage(newHeight: videoItemSize.height))
+            firstImageLayer.position = CGPoint(x: parentLayer.bounds.width/2, y: parentLayer.bounds.height/2)
+            firstImageLayer.opacity = 0.0
+            parentLayer.addSublayer(firstImageLayer)
+            
+            hideLayer(firstImageLayer,
+                      hidden: false,
+                      duration: 0,
+                      beginTime: beginTime.seconds)
+            
+            let cupImageLayer = imageLayer("cup.png")
+            let cupHeight = CGFloat(100)
+            cupImageLayer.frame = CGRect(x: parentLayer.bounds.width/2 - cupHeight/2,
+                                         y: -cupHeight,
+                                         width: cupHeight,
+                                         height: cupHeight)
+            cupImageLayer.opacity = 0.0
+            parentLayer.addSublayer(cupImageLayer)
+            hideLayer(cupImageLayer,
+                      hidden: false,
+                      duration: 0,
+                      beginTime: beginTime.seconds)
+            moveLayer(cupImageLayer,
+                      duration: 0.5,
+                      beginTime: beginTime.seconds,
+                      fromPoint: cupImageLayer.position,
+                      toPoint: CGPoint(x: cupImageLayer.position.x, y: cupHeight),
+                      damping: true)
+            
+            
+            let emitterLayer = CAEmitterLayer()
+            emitterLayer.opacity = 0.0
+            emitterLayer.frame = parentLayer.bounds
+            
+            hideLayer(emitterLayer,
+                      hidden: false,
+                      duration: 0,
+                      beginTime: beginTime.seconds)
+            
+            let emitterCell = CAEmitterCell()
+            emitterCell.emissionLongitude = CGFloat(M_PI_4)
+            emitterCell.emissionLatitude = 0
+            emitterCell.lifetime = 2.6
+            emitterCell.birthRate = 6
+            emitterCell.velocity = 300
+            emitterCell.velocityRange = 100
+            emitterCell.yAcceleration = 150
+            emitterCell.emissionRange = CGFloat(M_PI_4)
+            let newColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1).CGColor
+            emitterCell.color = newColor
+            
+            emitterCell.redRange = 0.9
+            emitterCell.greenRange = 0.9
+            emitterCell.blueRange = 0.9
+            emitterCell.name = "base"
+            
+            let fireworkRedCell = emitterCellFromImageName("red.png")
+            let fireworkGreenCell = emitterCellFromImageName("green.png")
+            let fireworkYellowCell = emitterCellFromImageName("yellow.png")
+            
+            emitterCell.emitterCells = [fireworkRedCell, fireworkGreenCell, fireworkYellowCell]
+            emitterLayer.emitterCells = [emitterCell]
+            parentLayer.addSublayer(emitterLayer)
+            
+            //////
+            let cheerDuration = CMTimeMake(3, kCMTimeZero.timescale)
+            videoAssetDuration = CMTimeAdd(videoAssetDuration, cheerDuration)
+            
+            //Add applause
+            let applauseAudioTrack = composition.addMutableTrackWithMediaType(AVMediaTypeAudio, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
+            try! applauseAudioTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, cheerDuration), ofTrack: applauseAudioAsset.tracksWithMediaType(AVMediaTypeAudio)[0], atTime: beginTime)
+            
+            beginTime = CMTimeAdd(startTime, videoAssetDuration)
+            
+            hideLayer(firstImageLayer,
+                      hidden: true,
+                      duration: 0,
+                      beginTime: beginTime.seconds)
+            
+            
+            hideLayer(emitterLayer,
+                      hidden: true,
+                      duration: 0,
+                      beginTime: beginTime.seconds)
+            
+            moveLayer(cupImageLayer,
+                      duration: 0.35,
+                      beginTime: beginTime.seconds,
+                      fromPoint: cupImageLayer.position,
+                      toPoint: CGPoint(x: cupImageLayer.position.x, y: -cupHeight))
+            
+            hideLayer(cupImageLayer,
+                      hidden: true,
+                      duration: 0.35,
+                      beginTime: beginTime.seconds + 1)
+        }
         
         //// Instruction
-        let assetTimeRange = CMTimeRangeMake(kCMTimeZero, videoAsset.duration)
+        let assetTimeRange = CMTimeRangeMake(kCMTimeZero, videoAssetDuration)
         let videoTrack = composition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
         try! videoTrack.insertTimeRange(assetTimeRange, ofTrack: videoAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: atTime)
         let layerInstruction = videoCompositionInstructionForTrack(videoTrack,
@@ -694,12 +782,13 @@ extension MergeVideosViewController {
         try! audioTrack.insertTimeRange(assetTimeRange, ofTrack: videoAsset.tracksWithMediaType(AVMediaTypeAudio)[0], atTime: atTime)
         
         let tienInstruction = AVMutableVideoCompositionInstruction()
-        tienInstruction.timeRange = CMTimeRangeMake(atTime, videoAsset.duration)
+        tienInstruction.timeRange = CMTimeRangeMake(atTime, videoAssetDuration)
         tienInstruction.backgroundColor = backgroundColor
         tienInstruction.layerInstructions = [layerInstruction]
         
         
-        let endTime = CMTimeAdd(startTime, videoAsset.duration)
+        let endTime = CMTimeAdd(startTime, videoAssetDuration)
+        
         return (tienInstruction, endTime)
         
     }
@@ -1066,7 +1155,10 @@ extension MergeVideosViewController {
             if let url = url {
                 let player = AVPlayer(URL: url)
                 self.playerController.player = player
-                self.presentViewController(self.playerController, animated: true, completion: nil)
+                self.playerController
+                self.presentViewController(self.playerController, animated: true, completion: { _ in
+                    self.playerController.player?.play()
+                })
             } else {
                 let alert = UIAlertController(title: error?.localizedDescription, message: nil, preferredStyle: .Alert)
                 alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Cancel, handler: nil))
@@ -1184,6 +1276,9 @@ extension MergeVideosViewController {
         
         let blankAudioURL = NSURL(fileURLWithPath: NSBundle.mainBundle().pathForResource("audio-1", ofType: "mp3")!)
         blankAudioAsset = AVAsset(URL: blankAudioURL)
+        
+        let applauseAudioURL = NSURL(fileURLWithPath: NSBundle.mainBundle().pathForResource("applause", ofType: "mp3")!)
+        applauseAudioAsset = AVAsset(URL: applauseAudioURL)
     }
     
     private func totalDurations(assets: [AVAsset]) -> CMTime {
@@ -1241,7 +1336,6 @@ extension MergeVideosViewController {
             } else {
                 let scaleFactor = CGAffineTransformMakeScale(scaleToFitRatio, scaleToFitRatio)
                 if assetInfo.orientation == .Down {
-                    //                    let concat = CGAffineTransformConcat(CGAffineTransformConcat(assetTrack.preferredTransform, scaleFactor), CGAffineTransformMakeTranslation(0, frame.width / 2))
                     let fixUpsideDown = CGAffineTransformMakeRotation(CGFloat(M_PI))
                     let windowBounds = CGRect(origin: .zero, size: frame.size)
                     let yFix = assetTrack.naturalSize.height + windowBounds.height
