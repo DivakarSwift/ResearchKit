@@ -32,6 +32,8 @@ class MergeVideosViewController: UIViewController {
     let loadingVC = UIAlertController.loadingVC()
     let playerController = AVPlayerViewController()
     
+    var blankAudioAsset: AVAsset!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         //Load asset
@@ -248,7 +250,15 @@ extension MergeVideosViewController {
                                                                    fixRotate: true,
                                                                    frame: CGRect(origin: .zero, size: videoSize))
         layerInstruction.setOpacity(0.0, atTime: CMTimeAdd(timeRange.start, timeRange.duration))
+        
+        
         return layerInstruction
+    }
+    
+    private func addBlankAudioInstructionAtTimeRange(timeRange: CMTimeRange,
+                                             composition: AVMutableComposition) {
+        let blankAudioTrack = composition.addMutableTrackWithMediaType(AVMediaTypeAudio, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
+        try! blankAudioTrack.insertTimeRange(timeRange, ofTrack: blankAudioAsset.tracksWithMediaType(AVMediaTypeAudio)[0], atTime: timeRange.start)
     }
     
     private func addLayerInstruction(layerInstruction: AVMutableVideoCompositionLayerInstruction,
@@ -498,7 +508,6 @@ extension MergeVideosViewController {
                   toPoint: CGPoint(x: 3*spaceWidth, y: 0))
         
         
-        
         let tienThumbnailLayer = imageLayer(assets[0].previewImageAtTime()!.resizeImage(newHeight: videoItemSize.height))
         tienThumbnailLayer.anchorPoint = .zero
         tienThumbnailLayer.position = CGPoint(x: parentLayer.bounds.width, y: 0)
@@ -595,6 +604,9 @@ extension MergeVideosViewController {
         let layerInstruction = blankInstructionAtTimeRange(timeRange,
                                                            composition: composition,
                                                            videoSize: ExportedVideoSize)
+        
+        addBlankAudioInstructionAtTimeRange(timeRange,
+                                            composition: composition)
         
         let introInstruction = AVMutableVideoCompositionInstruction()
         introInstruction.timeRange = timeRange
@@ -788,9 +800,13 @@ extension MergeVideosViewController {
         
         
         /// Instruction
-        let layerInstruction = blankInstructionAtTimeRange(CMTimeRangeMake(kCMTimeZero, atTime),
+        let timeRange = CMTimeRangeMake(kCMTimeZero, atTime)
+        let layerInstruction = blankInstructionAtTimeRange(timeRange,
                                                            composition: composition,
                                                            videoSize: ExportedVideoSize)
+        
+        addBlankAudioInstructionAtTimeRange(timeRange,
+                                            composition: composition)
         
         let introInstruction = AVMutableVideoCompositionInstruction()
         introInstruction.timeRange = CMTimeRangeMake(startTime, atTime)
@@ -1151,6 +1167,9 @@ extension MergeVideosViewController {
         
         let blankVideoURL = NSURL(fileURLWithPath: NSBundle.mainBundle().pathForResource("blank", ofType: "mp4")!)
         blankVideoAsset = AVAsset(URL: blankVideoURL)
+        
+        let blankAudioURL = NSURL(fileURLWithPath: NSBundle.mainBundle().pathForResource("audio-1", ofType: "mp3")!)
+        blankAudioAsset = AVAsset(URL: blankAudioURL)
     }
     
     private func totalDurations(assets: [AVAsset]) -> CMTime {
