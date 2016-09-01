@@ -183,6 +183,19 @@ extension MergeVideosViewController {
         ////////////////////////////////////////////////
         
         
+        
+        
+        ////////////////////////////////////////////////
+        let (sumaryInstruction, sumaryEndTime) = addSumaryScenceAtTime(atTime,
+                                                                       parentLayer: parentLayer,
+                                                                       composition: mixComposition,
+                                                                       videoItemSize: videoItemSize)
+        atTime = sumaryEndTime
+        instructions.append(sumaryInstruction)
+        ////////////////////////////////////////////////
+        
+        
+        
         ////////////////////////////////////////////////
         ////////////////////////////////////////////////
         let renderSize = ExportedVideoSize
@@ -225,16 +238,16 @@ extension MergeVideosViewController {
         }
     }
     
-    private func setVideoDuration(duration: CMTime,
-                                  composition: AVMutableComposition,
-                                  videoSize: CGSize) -> AVMutableVideoCompositionLayerInstruction {
+    private func blankInstructionAtTimeRange(timeRange: CMTimeRange,
+                                             composition: AVMutableComposition,
+                                             videoSize: CGSize) -> AVMutableVideoCompositionLayerInstruction {
         let blankTrack = composition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
-        try! blankTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, duration), ofTrack: blankVideoAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: kCMTimeZero)
+        try! blankTrack.insertTimeRange(timeRange, ofTrack: blankVideoAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: timeRange.start)
         let layerInstruction = videoCompositionInstructionForTrack(blankTrack,
                                                                    asset: blankVideoAsset,
                                                                    fixRotate: true,
                                                                    frame: CGRect(origin: .zero, size: videoSize))
-        layerInstruction.setOpacity(0.0, atTime: CMTimeAdd(kCMTimeZero, duration))
+        layerInstruction.setOpacity(0.0, atTime: CMTimeAdd(timeRange.start, timeRange.duration))
         return layerInstruction
     }
     
@@ -297,6 +310,20 @@ extension MergeVideosViewController {
         }
     }
     
+    private func imageLayer(imageName: String) -> CALayer {
+        let image = UIImage(named: imageName)!
+        return imageLayer(image)
+    }
+    
+    private func imageLayer(image: UIImage) -> CALayer {
+        let layer = CALayer()
+        layer.contents = image.CGImage
+        layer.frame = CGRect(origin: CGPoint(x: 0, y: 0), size: image.size)
+        layer.masksToBounds = true
+        layer.contentsGravity = kCAGravityResizeAspect
+        return layer
+    }
+    
     private func blankCenterTextLayer(backgroundColor backgroundColor: UIColor,
                                                       frame: CGRect,
                                                       text: String,
@@ -346,7 +373,7 @@ extension MergeVideosViewController {
             result.layer.opacity = 0.0
             self.hideLayer(result.layer, hidden: false, duration: 0, beginTime: atTime.seconds)
         }
-
+        
         atTime = CMTimeAdd(atTime, CMTimeMake(duration, kCMTimeZero.timescale))
         
         if hideWhenEnd {
@@ -364,30 +391,165 @@ extension MergeVideosViewController {
     private func addSumaryScenceAtTime(startTime: CMTime,
                                        parentLayer: CALayer,
                                        composition: AVMutableComposition,
-                                       videoAsset: AVAsset,
-                                       title: String,
                                        videoItemSize: CGSize) -> (AVMutableVideoCompositionInstruction, endTime: CMTime) {
-        let atTime = startTime
+        let backgroundColor = UIColor(red: 102/255, green: 89/255, blue: 255/255, alpha: 1).CGColor
+        var atTime = startTime
+        let animationDuration = 0.25
+        let spaceWidth = videoItemSize.width/3
+        let cuongThumbnailLayer = imageLayer(assets[4].previewImageAtTime()!.resizeImage(newHeight: videoItemSize.height))
+        cuongThumbnailLayer.anchorPoint = .zero
+        cuongThumbnailLayer.position = CGPoint(x: parentLayer.bounds.width, y: 0)
+        cuongThumbnailLayer.opacity = 0.0
+        parentLayer.addSublayer(cuongThumbnailLayer)
+        
+        hideLayer(cuongThumbnailLayer,
+                  hidden: false,
+                  duration: 0,
+                  beginTime: atTime.seconds)
+        moveLayer(cuongThumbnailLayer,
+                  duration: animationDuration,
+                  beginTime: atTime.seconds,
+                  fromPoint: cuongThumbnailLayer.position,
+                  toPoint: .zero)
+        
+        
+        
+        let taiThumbnailLayer = imageLayer(assets[3].previewImageAtTime()!.resizeImage(newHeight: videoItemSize.height))
+        taiThumbnailLayer.anchorPoint = .zero
+        taiThumbnailLayer.position = CGPoint(x: parentLayer.bounds.width, y: 0)
+        taiThumbnailLayer.opacity = 0.0
+        parentLayer.addSublayer(taiThumbnailLayer)
+        
+        hideLayer(taiThumbnailLayer,
+                  hidden: false,
+                  duration: 0,
+                  beginTime: atTime.seconds)
+        moveLayer(taiThumbnailLayer,
+                  duration: animationDuration,
+                  beginTime: atTime.seconds + animationDuration,
+                  fromPoint: taiThumbnailLayer.position,
+                  toPoint: CGPoint(x: spaceWidth, y: 0))
+        
+        
+        
+        
+        let tamThumbnailLayer = imageLayer(assets[2].previewImageAtTime()!.resizeImage(newHeight: videoItemSize.height))
+        tamThumbnailLayer.anchorPoint = .zero
+        tamThumbnailLayer.position = CGPoint(x: parentLayer.bounds.width, y: 0)
+        tamThumbnailLayer.opacity = 0.0
+        parentLayer.addSublayer(tamThumbnailLayer)
+        
+        hideLayer(tamThumbnailLayer,
+                  hidden: false,
+                  duration: 0,
+                  beginTime: atTime.seconds)
+        moveLayer(tamThumbnailLayer,
+                  duration: animationDuration,
+                  beginTime: atTime.seconds + animationDuration * 2,
+                  fromPoint: tamThumbnailLayer.position,
+                  toPoint: CGPoint(x: 2*spaceWidth, y: 0))
+        
+        
+        let sunnyThumbnailLayer = imageLayer(assets[1].previewImageAtTime()!.resizeImage(newHeight: videoItemSize.height))
+        sunnyThumbnailLayer.anchorPoint = .zero
+        sunnyThumbnailLayer.position = CGPoint(x: parentLayer.bounds.width, y: 0)
+        sunnyThumbnailLayer.opacity = 0.0
+        parentLayer.addSublayer(sunnyThumbnailLayer)
+        
+        hideLayer(sunnyThumbnailLayer,
+                  hidden: false,
+                  duration: 0,
+                  beginTime: atTime.seconds)
+        moveLayer(sunnyThumbnailLayer,
+                  duration: animationDuration,
+                  beginTime: atTime.seconds + animationDuration * 3,
+                  fromPoint: sunnyThumbnailLayer.position,
+                  toPoint: CGPoint(x: 3*spaceWidth, y: 0))
+        
+        
+        
+        let tienThumbnailLayer = imageLayer(assets[0].previewImageAtTime()!.resizeImage(newHeight: videoItemSize.height))
+        tienThumbnailLayer.anchorPoint = .zero
+        tienThumbnailLayer.position = CGPoint(x: parentLayer.bounds.width, y: 0)
+        tienThumbnailLayer.opacity = 0.0
+        parentLayer.addSublayer(tienThumbnailLayer)
+        
+        let lastEndPoint = CGPoint(x: 4*spaceWidth, y: 0)
+        hideLayer(tienThumbnailLayer,
+                  hidden: false,
+                  duration: 0,
+                  beginTime: atTime.seconds)
+        moveLayer(tienThumbnailLayer,
+                  duration: animationDuration,
+                  beginTime: atTime.seconds + animationDuration * 4,
+                  fromPoint: tienThumbnailLayer.position,
+                  toPoint: lastEndPoint)
+        
+        
+        let whoNextLayer = CALayer()
+        whoNextLayer.backgroundColor = UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1).CGColor
+        whoNextLayer.frame = CGRect(x: 0,
+                                    y: 0,
+                                    width: (parentLayer.bounds.width - lastEndPoint.x - tienThumbnailLayer.bounds.width/2),
+                                    height: parentLayer.bounds.height)
+        whoNextLayer.opacity = 0.0
+        whoNextLayer.anchorPoint = .zero
+        whoNextLayer.position = CGPoint(x: parentLayer.bounds.width,
+                                        y: 0)
+        parentLayer.addSublayer(whoNextLayer)
+        
+        
+        let whoNextTextLayer = CATextLayer()
+        whoNextTextLayer.string = "WHO\nNEXT?"
+        whoNextTextLayer.wrapped = true
+        whoNextTextLayer.font = font1
+        whoNextTextLayer.fontSize = 70
+        whoNextTextLayer.frame = CGRect(origin: .zero, size: CGSize(width: whoNextLayer.bounds.width,
+            height: 200))
+        whoNextTextLayer.position = CGPoint(x: whoNextLayer.bounds.width/2, y: whoNextLayer.bounds.height/2)
+        whoNextTextLayer.alignmentMode = kCAAlignmentCenter
+        whoNextLayer.addSublayer(whoNextTextLayer)
+        
+        
+        
+        hideLayer(whoNextLayer,
+                  hidden: false,
+                  duration: 0,
+                  beginTime: atTime.seconds)
+        moveLayer(whoNextLayer,
+                  duration: animationDuration,
+                  beginTime: atTime.seconds + animationDuration * 5,
+                  fromPoint: whoNextLayer.position,
+                  toPoint: CGPoint(x: parentLayer.bounds.width - whoNextLayer.bounds.width,
+                    y: 0))
+        
+        
+        
+        atTime = CMTimeAdd(atTime, CMTimeMake(4, kCMTimeZero.timescale))
+        
+        
+        
         /// Instruction
-        let layerInstruction = setVideoDuration(atTime,
-                                                composition: composition,
-                                                videoSize: ExportedVideoSize)
-        layerInstruction.setOpacity(0.0, atTime: atTime)
+        let duration = CMTimeSubtract(atTime, startTime)
+        let timeRange = CMTimeRangeMake(startTime, duration)
+        let layerInstruction = blankInstructionAtTimeRange(timeRange,
+                                                           composition: composition,
+                                                           videoSize: ExportedVideoSize)
         
         let introInstruction = AVMutableVideoCompositionInstruction()
-        introInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, atTime)
-        introInstruction.backgroundColor = UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1).CGColor
+        introInstruction.timeRange = timeRange
+        introInstruction.backgroundColor = backgroundColor
         introInstruction.layerInstructions = [layerInstruction]
         
         return (introInstruction, atTime)
     }
     
     private func addVideoItemScenceAtTime(startTime: CMTime,
-                                     parentLayer: CALayer,
-                                     composition: AVMutableComposition,
-                                     videoAsset: AVAsset,
-                                     title: String,
-                                     videoItemSize: CGSize) -> (AVMutableVideoCompositionInstruction, endTime: CMTime) {
+                                          parentLayer: CALayer,
+                                          composition: AVMutableComposition,
+                                          videoAsset: AVAsset,
+                                          title: String,
+                                          videoItemSize: CGSize) -> (AVMutableVideoCompositionInstruction, endTime: CMTime) {
         let randomSide = arc4random_uniform(2) == 0
         let startPoint = randomSide ? CGPoint(x: -parentLayer.bounds.width/2, y: parentLayer.bounds.height/2) : CGPoint(x: parentLayer.bounds.width*3/2, y: parentLayer.bounds.height/2)
         let endPoint = randomSide ? CGPoint(x: (parentLayer.bounds.width/2 - videoItemSize.width) - 40,
@@ -436,10 +598,10 @@ extension MergeVideosViewController {
         let videoTrack = composition.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
         try! videoTrack.insertTimeRange(assetTimeRange, ofTrack: videoAsset.tracksWithMediaType(AVMediaTypeVideo)[0], atTime: atTime)
         let layerInstruction = videoCompositionInstructionForTrack(videoTrack,
-                                                                       asset: videoAsset,
-                                                                       fixRotate: true,
-                                                                       frame: CGRect(origin: CGPoint(x: ExportedVideoSize.width/2 - videoItemSize.width/2, y: 0),
-                                                                        size: videoItemSize))
+                                                                   asset: videoAsset,
+                                                                   fixRotate: true,
+                                                                   frame: CGRect(origin: CGPoint(x: ExportedVideoSize.width/2 - videoItemSize.width/2, y: 0),
+                                                                    size: videoItemSize))
         
         let audioTrack = composition.addMutableTrackWithMediaType(AVMediaTypeAudio, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
         try! audioTrack.insertTimeRange(assetTimeRange, ofTrack: videoAsset.tracksWithMediaType(AVMediaTypeAudio)[0], atTime: atTime)
@@ -565,13 +727,12 @@ extension MergeVideosViewController {
         
         
         /// Instruction
-        let layerInstruction = setVideoDuration(atTime,
-                                                composition: composition,
-                                                videoSize: ExportedVideoSize)
-        layerInstruction.setOpacity(0.0, atTime: atTime)
+        let layerInstruction = blankInstructionAtTimeRange(CMTimeRangeMake(kCMTimeZero, atTime),
+                                                           composition: composition,
+                                                           videoSize: ExportedVideoSize)
         
         let introInstruction = AVMutableVideoCompositionInstruction()
-        introInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, atTime)
+        introInstruction.timeRange = CMTimeRangeMake(startTime, atTime)
         introInstruction.backgroundColor = UIColor(red: 228/255, green: 63/255, blue: 107/255, alpha: 1).CGColor
         introInstruction.layerInstructions = [layerInstruction]
         
@@ -608,10 +769,7 @@ extension MergeVideosViewController {
         promptImageLayer.masksToBounds = true
         promptLayer.addSublayer(promptImageLayer)
         
-        let companyLogoImage = UIImage(named: "company-logo.png")!
-        companyLogoLayer = CALayer()
-        companyLogoLayer.contentsGravity = kCAGravityResizeAspect
-        companyLogoLayer.contents = companyLogoImage.CGImage
+        companyLogoLayer = imageLayer("company-logo.png")
         companyLogoLayer.frame = CGRect(origin: CGPoint(x: promptImageLayer.frame.maxX + 40, y: 40.0),
                                         size: CGSize(width: 80, height: 80))
         companyLogoLayer.masksToBounds = true
