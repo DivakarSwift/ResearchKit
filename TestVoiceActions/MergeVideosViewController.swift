@@ -322,9 +322,18 @@ extension MergeVideosViewController {
     
     private func zoomOutLayer(layer: CALayer,
                              duaration: CFTimeInterval,
-                             beginTime: CFTimeInterval) {
-        let scaleAnimation: CABasicAnimation = CABasicAnimation(keyPath: "transform.scale")
-        scaleAnimation.duration = duaration
+                             beginTime: CFTimeInterval,
+                             damping: Bool) {
+        let scaleAnimation: CABasicAnimation!
+        if damping {
+            scaleAnimation = CASpringAnimation(keyPath: "transform.scale")
+            scaleAnimation.duration = (scaleAnimation as! CASpringAnimation).settlingDuration
+            (scaleAnimation as! CASpringAnimation).damping = 10.0
+            (scaleAnimation as! CASpringAnimation).initialVelocity = 0.7
+        } else {
+            scaleAnimation = CABasicAnimation(keyPath: "transform.scale")
+            scaleAnimation.duration = duaration
+        }
         scaleAnimation.removedOnCompletion = false
         scaleAnimation.fromValue = 0.0
         scaleAnimation.toValue = 1.0
@@ -592,6 +601,11 @@ extension MergeVideosViewController {
         letJoinAddressLayer.foregroundColor = UIColor(red: 84/255, green: 212/255, blue: 221/255, alpha: 1).CGColor
         letJoinAddressLayer.alignmentMode = kCAAlignmentCenter
         letJoinLayer.addSublayer(letJoinAddressLayer)
+        
+        zoomOutLayer(letJoinAddressLayer,
+                     duaration: 0.5,
+                     beginTime: atTime.seconds,
+                     damping: true)
         
         atTime = CMTimeAdd(atTime, CMTimeMake(1, kCMTimeZero.timescale))
         
